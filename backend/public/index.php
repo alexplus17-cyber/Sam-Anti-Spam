@@ -35,6 +35,7 @@ try {
         $r->addRoute('POST', '/v1/check', 'check_spam_handler');
         $r->addRoute('GET', '/v1/sfw-list', 'sfw_list_handler');
         $r->addRoute('POST', '/v1/report', 'report_handler');
+        $r->addRoute('POST', '/v1/register', 'register_handler');
     });
 
     // 6. Dispatch Logic
@@ -96,6 +97,11 @@ try {
                 }
 
                 $controller = new \SamApi\Controllers\ReportController($pdo);
+                $controller->handle();
+
+            } elseif ($handler === 'register_handler') {
+                // Public endpoint, no AuthMiddleware
+                $controller = new \SamApi\Controllers\RegisterController($pdo);
                 $controller->handle();
 
             } else {

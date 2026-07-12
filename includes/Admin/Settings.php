@@ -10,6 +10,10 @@ class Settings {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_post_sam_restore_htaccess', array( $this, 'handle_restore_htaccess' ) );
+
+		// AJAX handlers for registration
+		add_action( 'wp_ajax_sam_register_cloud', array( $this, 'ajax_register_cloud' ) );
+		add_action( 'wp_ajax_sam_disconnect_cloud', array( $this, 'ajax_disconnect_cloud' ) );
 	}
 
 	public function add_settings_page() {
@@ -28,9 +32,9 @@ class Settings {
 			'sanitize_callback' => array( $this, 'sanitize_settings' )
 		) );
 
-		// General Tab
+		// General Tab (API connection UI handled custom, SFW handled standard)
 		add_settings_section( 'sam_antispam_general', 'General', null, 'sam-anti-spam-general' );
-		add_settings_field( 'api_key', 'API Key', array( $this, 'render_text_field' ), 'sam-anti-spam-general', 'sam_antispam_general', array( 'label_for' => 'api_key' ) );
+		add_settings_field( 'api_connection', 'Cloud Connection', array( $this, 'render_api_connection_ui' ), 'sam-anti-spam-general', 'sam_antispam_general' );
 		add_settings_field( 'enable_sfw', 'Enable Spam FireWall (SFW)', array( $this, 'render_checkbox_field' ), 'sam-anti-spam-general', 'sam_antispam_general', array( 'label_for' => 'enable_sfw' ) );
 
 		// Integrations Tab
@@ -47,6 +51,91 @@ class Settings {
 		add_settings_section( 'sam_antispam_lists', 'Whitelist / Blacklist', null, 'sam-anti-spam-lists' );
 		add_settings_field( 'whitelist_emails', 'Whitelist Emails', array( $this, 'render_textarea_field' ), 'sam-anti-spam-lists', 'sam_antispam_lists', array( 'label_for' => 'whitelist_emails' ) );
 		add_settings_field( 'blacklist_ips', 'Blacklist IPs', array( $this, 'render_textarea_field' ), 'sam-anti-spam-lists', 'sam_antispam_lists', array( 'label_for' => 'blacklist_ips' ) );
+	}
+
+	public function render_api_connection_ui() {
+		$options = get_option( 'sam_antispam_settings', array() );
+		$api_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
+
+		$site_url = get_site_url();
+		$admin_email = get_option( 'admin_email' );
+
+		if ( empty( $api_key ) ) {
+			// State 1: Not Connected
+			echo '<div id="sam-api-status" style="margin-bottom: 10px;">';
+			echo '<p><strong>Site URL:</strong> <span id="sam-site-url">' . esc_html( $site_url ) . '</span></p>';
+			echo '<p><strong>Admin Email:</strong> <span id="sam-admin-email">' . esc_html( $admin_email ) . '</span></p>';
+			echo '<p style="color: red;">Status: Not Connected</p>';
+			echo '<button type="button" class="button button-primary" id="sam-connect-btn">Connect to Sam Anti Spam Cloud</button>';
+			echo '<span id="sam-connect-spinner" class="spinner"></span>';
+			echo '</div>';
+		} else {
+			// State 2: Connected
+			$masked_key = substr( $api_key, 0, 3 ) . str_repeat( '*', 20 ) . substr( $api_key, -3 );
+			echo '<div id="sam-api-status" style="margin-bottom: 10px;">';
+			echo '<p style="color: green; font-weight: bold;">Status: Cloud Connected</p>';
+			echo '<p><strong>API Key:</strong> ' . esc_html( $masked_key ) . '</p>';
+			echo '<button type="button" class="button button-secondary" id="sam-disconnect-btn">Disconnect</button>';
+			echo '<span id="sam-connect-spinner" class="spinner"></span>';
+			echo '</div>';
+		}
+	}
+
+	public function ajax_register_cloud() {
+		check_ajax_referer( 'sam_admin_settings', 'security' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
+		}
+
+		$site_url = isset( $_POST['site_url'] ) ? sanitize_text_field( wp_unslash( $_POST['site_url'] ) ) : '';
+		$admin_email = isset( $_POST['admin_email'] ) ? sanitize_email( wp_unslash( $_POST['admin_email'] ) ) : '';
+
+		// Temporarily hardcoded for scaffolding, should be dynamic in production
+		$register_url = 'https://api.samantispam.com/v1/register';
+
+		$response = wp_remote_post( $register_url, array(
+			'body'    => wp_json_encode( array( 'site_url' => $site_url, 'admin_email' => $admin_email ) ),
+			'headers' => array( 'Content-Type' => 'application/json' ),
+			'timeout' => 10,
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => 'Connection to cloud failed: ' . $response->get_error_message() ) );
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( isset( $data['success'] ) && $data['success'] === true && ! empty( $data['api_key'] ) ) {
+			$options = get_option( 'sam_antispam_settings', array() );
+			$options['api_key'] = sanitize_text_field( $data['api_key'] );
+			update_option( 'sam_antispam_settings', $options );
+
+			wp_send_json_success( array(
+				'message' => 'Successfully connected to cloud.',
+				'api_key' => sanitize_text_field( $data['api_key'] )
+			) );
+		} else {
+			$err = isset( $data['error'] ) ? sanitize_text_field( $data['error'] ) : 'Unknown error from API.';
+			wp_send_json_error( array( 'message' => 'Registration failed: ' . $err ) );
+		}
+	}
+
+	public function ajax_disconnect_cloud() {
+		check_ajax_referer( 'sam_admin_settings', 'security' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
+		}
+
+		$options = get_option( 'sam_antispam_settings', array() );
+		if ( isset( $options['api_key'] ) ) {
+			unset( $options['api_key'] );
+			update_option( 'sam_antispam_settings', $options );
+		}
+
+		wp_send_json_success( array( 'message' => 'Disconnected from cloud.' ) );
 	}
 
 	public function handle_restore_htaccess() {

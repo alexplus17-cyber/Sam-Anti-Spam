@@ -21,28 +21,30 @@ class Firewall {
 			return;
 		}
 
-		// Dummy API call for Phase 4 demonstrating the logic
-		// In a real scenario, this queries the backend for the worst IPs
-		$api_url = 'https://api.samantispam.com/v2/bad_ips';
+		$api_key = isset( $options['api_key'] ) ? sanitize_text_field( $options['api_key'] ) : '';
 
-		$response = wp_remote_get( $api_url, array( 'timeout' => 5 ) );
+		// Real API call for Phase 4 logic
+		$api_url = 'https://api.samantispam.com/v1/sfw-list';
+
+		$args = array(
+			'timeout' => 5,
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $api_key,
+			),
+		);
+
+		$response = wp_remote_get( $api_url, $args );
 
 		// If the API call fails, do not wipe the cache file (graceful failure)
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 			return;
 		}
 
-		$body = wp_remote_retrieve_body( $response );
-		$ips = json_decode( $body, true );
+		// Read plain text response (one IP per line)
+		$body = trim( wp_remote_retrieve_body( $response ) );
 
-		// If json_decode fails (not an array), do not wipe the cache file
-		if ( ! is_array( $ips ) ) {
-			return;
-		}
-
-		// If the API explicitly returns an empty array, it means there are no bad IPs, so we clear the cache
 		$cache_file = ABSPATH . 'wp-content/sam-sfw-cache.txt';
-		$cache_content = empty( $ips ) ? '' : implode( "\n", $ips );
+		$cache_content = empty( $body ) ? '' : $body;
 
 		// Use WP Filesystem if available, fallback to basic file_put_contents with lock
 		if ( function_exists( 'WP_Filesystem' ) && WP_Filesystem() ) {

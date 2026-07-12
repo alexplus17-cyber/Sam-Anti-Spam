@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ApiClient {
 
-	private $api_url = 'https://api.samantispam.com/v2/check';
+	private $api_url = 'https://api.samantispam.com/v1/check';
 	private $report_url = 'https://api.samantispam.com/v1/report';
 	private $api_key = '';
 
