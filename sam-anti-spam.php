@@ -112,6 +112,10 @@ class Plugin {
 		$bot_manager = new Core\BotManager();
 		$bot_manager->init();
 
+		// Initialize Spam FireWall Manager
+		$firewall = new Core\Firewall();
+		$firewall->init();
+
 		// Initialize Core Engine
 		$ajax_handler = new Core\AjaxHandler();
 		$ajax_handler->init();
@@ -138,15 +142,30 @@ class Plugin {
 		// Ensure the class is loaded since it's an activation hook
 		require_once plugin_dir_path( __FILE__ ) . 'includes/Core/SpamLogger.php';
 		\SamAntiSpam\Core\SpamLogger::create_table();
+
+		// Schedule cron job for SFW cache updates
+		if ( ! wp_next_scheduled( 'sam_antispam_update_sfw_cache' ) ) {
+			wp_schedule_event( time(), 'ten_minutes', 'sam_antispam_update_sfw_cache' );
+		}
 	}
 
 	/**
 	 * Plugin deactivation hook.
 	 */
 	public static function deactivate() {
-		// Cleanup transients, scheduled events, etc.
+		// Cleanup cron jobs
+		wp_clear_scheduled_hook( 'sam_antispam_update_sfw_cache' );
 	}
 }
+
+// Add custom 10 minute schedule interval
+add_filter( 'cron_schedules', function( $schedules ) {
+	$schedules['ten_minutes'] = array(
+		'interval' => 600,
+		'display'  => esc_html__( 'Every 10 Minutes' ),
+	);
+	return $schedules;
+} );
 
 // Register activation and deactivation hooks.
 register_activation_hook( __FILE__, array( '\\SamAntiSpam\\Plugin', 'activate' ) );

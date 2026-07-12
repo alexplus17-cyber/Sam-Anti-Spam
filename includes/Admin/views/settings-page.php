@@ -1,7 +1,7 @@
 <div class="wrap sam-admin-wrap">
 	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
-	<?php settings_errors(); ?>
+	<?php settings_errors( 'sam_antispam_settings' ); ?>
 
 	<?php
 	$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'general';
@@ -30,5 +30,17 @@
 			submit_button( 'Save Settings' );
 			?>
 		</form>
+
+		<?php if ( $active_tab === 'general' ) : ?>
+			<hr />
+			<h3>Troubleshooting</h3>
+			<p>If enabling the Spam FireWall broke your site, use this button to restore your .htaccess file to its previous state.</p>
+			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+				<input type="hidden" name="action" value="sam_restore_htaccess">
+				<?php wp_nonce_field( 'sam_restore_htaccess' ); ?>
+				<?php submit_button( 'Restore .htaccess', 'secondary', 'submit', false, array( 'onclick' => 'return confirm("Are you sure you want to restore the .htaccess file?");' ) ); ?>
+			</form>
+		<?php endif; ?>
+
 	<?php endif; ?>
 </div>

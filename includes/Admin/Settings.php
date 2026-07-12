@@ -9,6 +9,7 @@ class Settings {
 	public function init() {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_post_sam_restore_htaccess', array( $this, 'handle_restore_htaccess' ) );
 	}
 
 	public function add_settings_page() {
@@ -30,6 +31,7 @@ class Settings {
 		// General Tab
 		add_settings_section( 'sam_antispam_general', 'General', null, 'sam-anti-spam-general' );
 		add_settings_field( 'api_key', 'API Key', array( $this, 'render_text_field' ), 'sam-anti-spam-general', 'sam_antispam_general', array( 'label_for' => 'api_key' ) );
+		add_settings_field( 'enable_sfw', 'Enable Spam FireWall (SFW)', array( $this, 'render_checkbox_field' ), 'sam-anti-spam-general', 'sam_antispam_general', array( 'label_for' => 'enable_sfw' ) );
 
 		// Integrations Tab
 		add_settings_section( 'sam_antispam_integrations', 'Integrations', null, 'sam-anti-spam-integrations' );
@@ -45,8 +47,25 @@ class Settings {
 		add_settings_section( 'sam_antispam_lists', 'Whitelist / Blacklist', null, 'sam-anti-spam-lists' );
 		add_settings_field( 'whitelist_emails', 'Whitelist Emails', array( $this, 'render_textarea_field' ), 'sam-anti-spam-lists', 'sam_antispam_lists', array( 'label_for' => 'whitelist_emails' ) );
 		add_settings_field( 'blacklist_ips', 'Blacklist IPs', array( $this, 'render_textarea_field' ), 'sam-anti-spam-lists', 'sam_antispam_lists', array( 'label_for' => 'blacklist_ips' ) );
+	}
 
-		// Spam Log Tab doesn't need settings fields, it just renders the table
+	public function handle_restore_htaccess() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Unauthorized' );
+		}
+
+		check_admin_referer( 'sam_restore_htaccess' );
+
+		$firewall = new \SamAntiSpam\Core\Firewall();
+		if ( $firewall->restore_htaccess() ) {
+			add_settings_error( 'sam_antispam_settings', 'sam_sfw_restored', '.htaccess successfully restored.', 'success' );
+		} else {
+			add_settings_error( 'sam_antispam_settings', 'sam_sfw_restore_failed', 'Failed to restore .htaccess (no backup found or permission denied).', 'error' );
+		}
+
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_redirect( admin_url( 'options-general.php?page=sam-anti-spam&tab=general' ) );
+		exit;
 	}
 
 	public function sanitize_settings( $input ) {
@@ -59,13 +78,30 @@ class Settings {
 
 		if ( is_array( $input ) ) {
 			foreach ( $input as $key => $value ) {
-				$existing[ $key ] = sanitize_text_field( $value ); // Basic sanitization
+				// Use correct sanitization based on field type
+				if ( in_array( $key, array( 'whitelist_emails', 'blacklist_ips' ), true ) ) {
+					$existing[ $key ] = sanitize_textarea_field( $value );
+				} else {
+					$existing[ $key ] = sanitize_text_field( $value );
+				}
 			}
 		}
 
 		// Handle unchecking of checkboxes (they aren't sent in POST if unchecked)
 		$tab = isset( $_POST['sam_active_tab'] ) ? sanitize_text_field( $_POST['sam_active_tab'] ) : 'general';
-		if ( $tab === 'integrations' ) {
+
+		if ( $tab === 'general' ) {
+			if ( ! isset( $input['enable_sfw'] ) ) {
+				unset( $existing['enable_sfw'] );
+				// If disabled, remove firewall rules
+				$firewall = new \SamAntiSpam\Core\Firewall();
+				$firewall->remove_firewall();
+			} else {
+				// If enabled, setup firewall rules
+				$firewall = new \SamAntiSpam\Core\Firewall();
+				$firewall->setup_firewall();
+			}
+		} elseif ( $tab === 'integrations' ) {
 			$checkboxes = array( 'enable_comments', 'enable_registrations', 'enable_cf7', 'enable_woo' );
 			foreach ( $checkboxes as $cb ) {
 				if ( ! isset( $input[ $cb ] ) ) {
@@ -87,6 +123,9 @@ class Settings {
 		$options = get_option( 'sam_antispam_settings' );
 		$checked = isset( $options[ $args['label_for'] ] ) ? checked( 1, $options[ $args['label_for'] ], false ) : '';
 		echo '<input type="checkbox" id="' . esc_attr( $args['label_for'] ) . '" name="sam_antispam_settings[' . esc_attr( $args['label_for'] ) . ']" value="1" ' . $checked . '/>';
+		if ( $args['label_for'] === 'enable_sfw' ) {
+			echo '<p class="description">Requires .htaccess modification. Be sure you know what you are doing.</p>';
+		}
 	}
 
 	public function render_textarea_field( $args ) {
