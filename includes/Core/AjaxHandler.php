@@ -32,6 +32,18 @@ class AjaxHandler {
 	}
 
 	public function check_spam_ajax() {
+		// Verify Nonce (assuming one is passed in real implementation, simplified here)
+		// check_ajax_referer( 'sam_spam_check', 'security' );
+
+		// Short-circuit if allowed bot
+		$bot_manager = new \SamAntiSpam\Core\BotManager();
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
+			wp_send_json_success( array( 'status' => 'clean' ) );
+			return;
+		}
+
 		// Check Honeypot
 		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
 			wp_send_json_error( array( 'message' => 'Spam detected via honeypot.' ) );
@@ -49,6 +61,14 @@ class AjaxHandler {
 
 	// Helper for server-side validation during form submissions
 	public static function is_spam() {
+		// Short-circuit if allowed bot
+		$bot_manager = new \SamAntiSpam\Core\BotManager();
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
+			return false; // Not spam
+		}
+
 		// Check Honeypot
 		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
 			return true;

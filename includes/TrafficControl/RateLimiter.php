@@ -16,8 +16,15 @@ class RateLimiter {
 			return; // Don't block admin actions here
 		}
 
-		$ip = $this->get_real_ip();
+		$ip = self::get_real_ip();
 		if ( ! $ip ) {
+			return;
+		}
+
+		// Short-circuit if allowed bot
+		$bot_manager = new \SamAntiSpam\Core\BotManager();
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
 			return;
 		}
 

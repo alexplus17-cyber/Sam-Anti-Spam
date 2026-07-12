@@ -1,0 +1,16 @@
+.sam-admin-wrap {
+	max-width: 800px;
+}
+
+.sam-admin-wrap .nav-tab-wrapper {
+	margin-bottom: 20px;
+}
+
+.sam-admin-wrap .form-table th {
+	width: 200px;
+}
+
+.sam-admin-wrap textarea {
+	width: 100%;
+	font-family: monospace;
+}

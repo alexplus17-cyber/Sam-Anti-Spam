@@ -51,6 +51,9 @@ class Plugin {
 
 		// Hook into init
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
+
+		// Enqueue Admin Scripts/Styles
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 	}
 
 	/**
@@ -93,9 +96,22 @@ class Plugin {
 	}
 
 	/**
+	 * Enqueue admin assets.
+	 */
+	public function enqueue_admin_assets( $hook ) {
+		if ( strpos( $hook, 'sam-anti-spam' ) !== false ) {
+			wp_enqueue_style( 'sam-anti-spam-admin', SAM_ANTI_SPAM_PLUGIN_URL . 'assets/css/sam-admin.css', array(), SAM_ANTI_SPAM_VERSION );
+		}
+	}
+
+	/**
 	 * Initialize plugin modules.
 	 */
 	public function init() {
+		// Initialize Bot Manager (early priority)
+		$bot_manager = new Core\BotManager();
+		$bot_manager->init();
+
 		// Initialize Core Engine
 		$ajax_handler = new Core\AjaxHandler();
 		$ajax_handler->init();
@@ -110,8 +126,9 @@ class Plugin {
 
 		// Initialize Admin if in dashboard
 		if ( is_admin() ) {
-			$dashboard = new Admin\Dashboard();
-			$dashboard->init();
+			// Replace Dashboard.php with Settings.php
+			$settings = new Admin\Settings();
+			$settings->init();
 		}
 	}
 
