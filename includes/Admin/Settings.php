@@ -124,7 +124,7 @@ class Settings {
 		$checked = isset( $options[ $args['label_for'] ] ) ? checked( 1, $options[ $args['label_for'] ], false ) : '';
 		echo '<input type="checkbox" id="' . esc_attr( $args['label_for'] ) . '" name="sam_antispam_settings[' . esc_attr( $args['label_for'] ) . ']" value="1" ' . $checked . '/>';
 		if ( $args['label_for'] === 'enable_sfw' ) {
-			echo '<p class="description">Requires .htaccess modification. Be sure you know what you are doing.</p>';
+			echo '<p class="description">Requires .htaccess modification. Be sure you know what you are doing. <strong>Note: This may not work correctly on FastCGI/PHP-FPM server environments.</strong></p>';
 		}
 	}
 

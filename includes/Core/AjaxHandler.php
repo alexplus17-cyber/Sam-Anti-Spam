@@ -20,17 +20,33 @@ class AjaxHandler {
 		$ajax_url = admin_url( 'admin-ajax.php' );
 
 		// Inject JS to set a verification cookie and send the AJAX request with the nonce
+		// ONLY upon form submission to prevent DoS, and measure load time.
 		echo "<script type='text/javascript'>
 			document.cookie = 'sam_verified=true; path=/; max-age=3600; samesite=strict';
+			var sam_load_time = Date.now();
+			var sam_ajax_fired = false;
 
-			// Simple AJAX fetch to notify the backend
-			fetch('" . esc_url( $ajax_url ) . "', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-				},
-				body: 'action=sam_check_spam&security=" . esc_js( $nonce ) . "'
-			});
+			document.addEventListener('submit', function(e) {
+				// Calculate time taken to submit
+				var submit_time = Date.now();
+				var time_diff = (submit_time - sam_load_time) / 1000; // seconds
+
+				// Prevent double firing if multiple forms exist
+				if(sam_ajax_fired) return;
+				sam_ajax_fired = true;
+
+				// Append time_diff to the body payload
+				var payload = 'action=sam_check_spam&security=" . esc_js( $nonce ) . "&time_taken=' + time_diff;
+
+				// Simple AJAX fetch to notify the backend
+				fetch('" . esc_url( $ajax_url ) . "', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: payload
+				});
+			}, true); // Use capturing phase to ensure it catches all submits
 		</script>";
 	}
 
@@ -60,6 +76,19 @@ class AjaxHandler {
 		}
 
 		$logger = new \SamAntiSpam\Core\SpamLogger();
+
+		// Check Client-Side Time (less than 3 seconds usually means bot)
+		$time_taken = isset( $_POST['time_taken'] ) ? floatval( $_POST['time_taken'] ) : 0;
+		if ( $time_taken < 3 ) {
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => 'AJAX Form Check',
+				'blocked_reason' => __( 'Too fast submission (Bot suspected)', 'sam-anti-spam' )
+			) );
+			wp_send_json_error( array( 'message' => __( 'Spam detected via speed check.', 'sam-anti-spam' ) ) );
+			return;
+		}
 
 		// Check Honeypot with Sanitization
 		$hp_value = isset( $_POST['sam_hp_field'] ) ? sanitize_text_field( wp_unslash( $_POST['sam_hp_field'] ) ) : '';
@@ -127,6 +156,9 @@ class AjaxHandler {
 		}
 
 		$logger = new \SamAntiSpam\Core\SpamLogger();
+
+		// Note: Time check is difficult server-side without JS tokens.
+		// Handled via the AJAX pre-flight check predominantly.
 
 		// Check Honeypot with Sanitization
 		$hp_value = isset( $_POST['sam_hp_field'] ) ? sanitize_text_field( wp_unslash( $_POST['sam_hp_field'] ) ) : '';
