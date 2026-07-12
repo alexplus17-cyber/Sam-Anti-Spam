@@ -63,12 +63,25 @@ try {
         case FastRoute\Dispatcher::FOUND:
             $handler = $routeInfo[1];
             $vars = $routeInfo[2];
-            // Dummy response for Step 2
-            http_response_code(200);
-            echo json_encode([
-                'status' => 'Route connected successfully',
-                'route'  => $handler
-            ]);
+
+            if ($handler === 'check_spam_handler') {
+                $auth = new \SamApi\Middleware\AuthMiddleware($pdo);
+                if (!$auth->authenticate()) {
+                    http_response_code(401);
+                    echo json_encode(['error' => 'Unauthorized']);
+                    break;
+                }
+
+                $controller = new \SamApi\Controllers\SpamCheckController($pdo);
+                $controller->handle();
+            } else {
+                // Dummy response for other routes (Step 2 state)
+                http_response_code(200);
+                echo json_encode([
+                    'status' => 'Route connected successfully',
+                    'route'  => $handler
+                ]);
+            }
             break;
     }
 
