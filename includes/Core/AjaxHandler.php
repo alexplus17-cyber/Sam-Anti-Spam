@@ -35,24 +35,66 @@ class AjaxHandler {
 		// Verify Nonce (assuming one is passed in real implementation, simplified here)
 		// check_ajax_referer( 'sam_spam_check', 'security' );
 
+		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$email = isset( $_POST['email'] ) ? sanitize_email( $_POST['email'] ) : '';
+
 		// Short-circuit if allowed bot
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
-		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
 		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
 			wp_send_json_success( array( 'status' => 'clean' ) );
 			return;
 		}
 
+		$logger = new \SamAntiSpam\Core\SpamLogger();
+
 		// Check Honeypot
 		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => 'AJAX Form Check',
+				'blocked_reason' => 'Honeypot Triggered'
+			) );
 			wp_send_json_error( array( 'message' => 'Spam detected via honeypot.' ) );
 			return;
 		}
 
 		// Check JS Cookie
+		$js_active = false;
 		if ( ! isset( $_COOKIE['sam_verified'] ) || $_COOKIE['sam_verified'] !== 'true' ) {
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => 'AJAX Form Check',
+				'blocked_reason' => 'JS Verification Failed'
+			) );
 			wp_send_json_error( array( 'message' => 'Spam detected via JS check.' ) );
+			return;
+		} else {
+			$js_active = true;
+		}
+
+		// Cloud API Fallback
+		$api_client = new \SamAntiSpam\Core\ApiClient();
+		$api_response = $api_client->check_spam( array(
+			'ip'          => $ip,
+			'user_agent'  => $ua,
+			'email'       => $email,
+			'content'     => '',
+			'action_type' => 'AJAX Form Check',
+			'js_active'   => $js_active
+		) );
+
+		if ( isset( $api_response['spam'] ) && $api_response['spam'] === true ) {
+			$reason = isset( $api_response['reason'] ) ? $api_response['reason'] : 'Blocked by Cloud API';
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => 'AJAX Form Check',
+				'blocked_reason' => $reason
+			) );
+			wp_send_json_error( array( 'message' => 'Spam detected via Cloud API.' ) );
 			return;
 		}
 
@@ -60,22 +102,62 @@ class AjaxHandler {
 	}
 
 	// Helper for server-side validation during form submissions
-	public static function is_spam() {
+	public static function is_spam( $action_type = 'Form Submission', $content = '', $email = '' ) {
+		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+
 		// Short-circuit if allowed bot
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
-		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
 		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
 			return false; // Not spam
 		}
 
+		$logger = new \SamAntiSpam\Core\SpamLogger();
+
 		// Check Honeypot
 		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => $action_type,
+				'blocked_reason' => 'Honeypot Triggered'
+			) );
 			return true;
 		}
 
 		// Check JS Cookie
+		$js_active = false;
 		if ( ! isset( $_COOKIE['sam_verified'] ) || $_COOKIE['sam_verified'] !== 'true' ) {
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => $action_type,
+				'blocked_reason' => 'JS Verification Failed'
+			) );
+			return true;
+		} else {
+			$js_active = true;
+		}
+
+		// Cloud API Fallback
+		$api_client = new \SamAntiSpam\Core\ApiClient();
+		$api_response = $api_client->check_spam( array(
+			'ip'          => $ip,
+			'user_agent'  => $ua,
+			'email'       => $email,
+			'content'     => $content,
+			'action_type' => $action_type,
+			'js_active'   => $js_active
+		) );
+
+		if ( isset( $api_response['spam'] ) && $api_response['spam'] === true ) {
+			$reason = isset( $api_response['reason'] ) ? $api_response['reason'] : 'Blocked by Cloud API';
+			$logger->log_blocked_attempt( array(
+				'ip'             => $ip,
+				'email'          => $email,
+				'action_type'    => $action_type,
+				'blocked_reason' => $reason
+			) );
 			return true;
 		}
 

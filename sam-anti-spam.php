@@ -126,7 +126,6 @@ class Plugin {
 
 		// Initialize Admin if in dashboard
 		if ( is_admin() ) {
-			// Replace Dashboard.php with Settings.php
 			$settings = new Admin\Settings();
 			$settings->init();
 		}
@@ -136,7 +135,9 @@ class Plugin {
 	 * Plugin activation hook.
 	 */
 	public static function activate() {
-		// Setup transients, initial DB options, etc.
+		// Ensure the class is loaded since it's an activation hook
+		require_once plugin_dir_path( __FILE__ ) . 'includes/Core/SpamLogger.php';
+		\SamAntiSpam\Core\SpamLogger::create_table();
 	}
 
 	/**
