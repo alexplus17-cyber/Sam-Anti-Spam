@@ -15,9 +15,22 @@ class AjaxHandler {
 	}
 
 	public function inject_js() {
-		// Inject JS to set a verification cookie
+		// Generate nonce
+		$nonce = wp_create_nonce( 'sam_spam_check' );
+		$ajax_url = admin_url( 'admin-ajax.php' );
+
+		// Inject JS to set a verification cookie and send the AJAX request with the nonce
 		echo "<script type='text/javascript'>
 			document.cookie = 'sam_verified=true; path=/; max-age=3600; samesite=strict';
+
+			// Simple AJAX fetch to notify the backend
+			fetch('" . esc_url( $ajax_url ) . "', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: 'action=sam_check_spam&security=" . esc_js( $nonce ) . "'
+			});
 		</script>";
 	}
 
@@ -32,12 +45,12 @@ class AjaxHandler {
 	}
 
 	public function check_spam_ajax() {
-		// Verify Nonce (assuming one is passed in real implementation, simplified here)
-		// check_ajax_referer( 'sam_spam_check', 'security' );
+		// Verify Nonce
+		check_ajax_referer( 'sam_spam_check', 'security' );
 
 		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
-		$email = isset( $_POST['email'] ) ? sanitize_email( $_POST['email'] ) : '';
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 
 		// Short-circuit if allowed bot
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
@@ -48,15 +61,16 @@ class AjaxHandler {
 
 		$logger = new \SamAntiSpam\Core\SpamLogger();
 
-		// Check Honeypot
-		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
+		// Check Honeypot with Sanitization
+		$hp_value = isset( $_POST['sam_hp_field'] ) ? sanitize_text_field( wp_unslash( $_POST['sam_hp_field'] ) ) : '';
+		if ( ! empty( $hp_value ) ) {
 			$logger->log_blocked_attempt( array(
 				'ip'             => $ip,
 				'email'          => $email,
 				'action_type'    => 'AJAX Form Check',
-				'blocked_reason' => 'Honeypot Triggered'
+				'blocked_reason' => __( 'Honeypot Triggered', 'sam-anti-spam' )
 			) );
-			wp_send_json_error( array( 'message' => 'Spam detected via honeypot.' ) );
+			wp_send_json_error( array( 'message' => __( 'Spam detected via honeypot.', 'sam-anti-spam' ) ) );
 			return;
 		}
 
@@ -67,9 +81,9 @@ class AjaxHandler {
 				'ip'             => $ip,
 				'email'          => $email,
 				'action_type'    => 'AJAX Form Check',
-				'blocked_reason' => 'JS Verification Failed'
+				'blocked_reason' => __( 'JS Verification Failed', 'sam-anti-spam' )
 			) );
-			wp_send_json_error( array( 'message' => 'Spam detected via JS check.' ) );
+			wp_send_json_error( array( 'message' => __( 'Spam detected via JS check.', 'sam-anti-spam' ) ) );
 			return;
 		} else {
 			$js_active = true;
@@ -87,14 +101,14 @@ class AjaxHandler {
 		) );
 
 		if ( isset( $api_response['spam'] ) && $api_response['spam'] === true ) {
-			$reason = isset( $api_response['reason'] ) ? $api_response['reason'] : 'Blocked by Cloud API';
+			$reason = isset( $api_response['reason'] ) ? sanitize_text_field( $api_response['reason'] ) : __( 'Blocked by Cloud API', 'sam-anti-spam' );
 			$logger->log_blocked_attempt( array(
 				'ip'             => $ip,
 				'email'          => $email,
 				'action_type'    => 'AJAX Form Check',
 				'blocked_reason' => $reason
 			) );
-			wp_send_json_error( array( 'message' => 'Spam detected via Cloud API.' ) );
+			wp_send_json_error( array( 'message' => __( 'Spam detected via Cloud API.', 'sam-anti-spam' ) ) );
 			return;
 		}
 
@@ -104,7 +118,7 @@ class AjaxHandler {
 	// Helper for server-side validation during form submissions
 	public static function is_spam( $action_type = 'Form Submission', $content = '', $email = '' ) {
 		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 		// Short-circuit if allowed bot
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
@@ -114,13 +128,14 @@ class AjaxHandler {
 
 		$logger = new \SamAntiSpam\Core\SpamLogger();
 
-		// Check Honeypot
-		if ( isset( $_POST['sam_hp_field'] ) && ! empty( $_POST['sam_hp_field'] ) ) {
+		// Check Honeypot with Sanitization
+		$hp_value = isset( $_POST['sam_hp_field'] ) ? sanitize_text_field( wp_unslash( $_POST['sam_hp_field'] ) ) : '';
+		if ( ! empty( $hp_value ) ) {
 			$logger->log_blocked_attempt( array(
 				'ip'             => $ip,
 				'email'          => $email,
 				'action_type'    => $action_type,
-				'blocked_reason' => 'Honeypot Triggered'
+				'blocked_reason' => __( 'Honeypot Triggered', 'sam-anti-spam' )
 			) );
 			return true;
 		}
@@ -132,7 +147,7 @@ class AjaxHandler {
 				'ip'             => $ip,
 				'email'          => $email,
 				'action_type'    => $action_type,
-				'blocked_reason' => 'JS Verification Failed'
+				'blocked_reason' => __( 'JS Verification Failed', 'sam-anti-spam' )
 			) );
 			return true;
 		} else {
@@ -151,7 +166,7 @@ class AjaxHandler {
 		) );
 
 		if ( isset( $api_response['spam'] ) && $api_response['spam'] === true ) {
-			$reason = isset( $api_response['reason'] ) ? $api_response['reason'] : 'Blocked by Cloud API';
+			$reason = isset( $api_response['reason'] ) ? sanitize_text_field( $api_response['reason'] ) : __( 'Blocked by Cloud API', 'sam-anti-spam' );
 			$logger->log_blocked_attempt( array(
 				'ip'             => $ip,
 				'email'          => $email,

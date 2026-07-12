@@ -62,7 +62,7 @@ class Hooks {
 	}
 
 	public function filter_woo_checkout() {
-		$email = isset( $_POST['billing_email'] ) ? sanitize_email( $_POST['billing_email'] ) : '';
+		$email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : '';
 
 		if ( AjaxHandler::is_spam( 'WooCommerce Checkout', '', $email ) ) {
 			wc_add_notice( __( 'Checkout blocked due to suspicious activity.', 'sam-anti-spam' ), 'error' );

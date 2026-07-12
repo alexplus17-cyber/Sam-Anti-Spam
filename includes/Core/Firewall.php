@@ -27,6 +27,7 @@ class Firewall {
 
 		$response = wp_remote_get( $api_url, array( 'timeout' => 5 ) );
 
+		// If the API call fails, do not wipe the cache file (graceful failure)
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 			return;
 		}
@@ -34,19 +35,21 @@ class Firewall {
 		$body = wp_remote_retrieve_body( $response );
 		$ips = json_decode( $body, true );
 
-		// Safety check: Don't wipe the file if the API returned an empty list incorrectly
-		if ( ! is_array( $ips ) || empty( $ips ) ) {
+		// If json_decode fails (not an array), do not wipe the cache file
+		if ( ! is_array( $ips ) ) {
 			return;
 		}
 
+		// If the API explicitly returns an empty array, it means there are no bad IPs, so we clear the cache
 		$cache_file = ABSPATH . 'wp-content/sam-sfw-cache.txt';
+		$cache_content = empty( $ips ) ? '' : implode( "\n", $ips );
 
 		// Use WP Filesystem if available, fallback to basic file_put_contents with lock
 		if ( function_exists( 'WP_Filesystem' ) && WP_Filesystem() ) {
 			global $wp_filesystem;
-			$wp_filesystem->put_contents( $cache_file, implode( "\n", $ips ), FS_CHMOD_FILE );
+			$wp_filesystem->put_contents( $cache_file, $cache_content, FS_CHMOD_FILE );
 		} else {
-			file_put_contents( $cache_file, implode( "\n", $ips ), LOCK_EX );
+			file_put_contents( $cache_file, $cache_content, LOCK_EX );
 		}
 	}
 
@@ -65,10 +68,21 @@ class Firewall {
 		$htaccess_file = get_home_path() . '.htaccess';
 		$sfw_source    = SAM_ANTI_SPAM_PLUGIN_DIR . 'sam-sfw.php';
 		$sfw_dest      = ABSPATH . 'sam-sfw.php';
+		$cache_file    = ABSPATH . 'wp-content/sam-sfw-cache.txt';
 
 		// Copy sam-sfw.php to root if it's not already there or if it's out of date
 		if ( file_exists( $sfw_source ) ) {
 			copy( $sfw_source, $sfw_dest );
+		}
+
+		// Initialize empty cache file if it doesn't exist so sam-sfw.php doesn't throw errors
+		if ( ! file_exists( $cache_file ) ) {
+			if ( function_exists( 'WP_Filesystem' ) && WP_Filesystem() ) {
+				global $wp_filesystem;
+				$wp_filesystem->put_contents( $cache_file, '', FS_CHMOD_FILE );
+			} else {
+				file_put_contents( $cache_file, '', LOCK_EX );
+			}
 		}
 
 		if ( ! file_exists( $htaccess_file ) || ! is_writable( $htaccess_file ) || ! file_exists( $sfw_dest ) ) {

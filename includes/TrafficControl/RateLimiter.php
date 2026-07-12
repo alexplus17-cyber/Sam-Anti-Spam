@@ -23,7 +23,7 @@ class RateLimiter {
 
 		// Short-circuit if allowed bot
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
 			return;
 		}
@@ -43,7 +43,7 @@ class RateLimiter {
 
 			// If more than 60 requests per minute, block
 			if ( $requests > 60 ) {
-				wp_die( 'Rate limit exceeded. Please try again later.', 'Sam Anti Spam', array( 'response' => 429 ) );
+				wp_die( esc_html__( 'Rate limit exceeded. Please try again later.', 'sam-anti-spam' ), esc_html__( 'Sam Anti Spam', 'sam-anti-spam' ), array( 'response' => 429 ) );
 			}
 
 			// Update the transient value but preserve the original expiration time

@@ -40,11 +40,13 @@ class ApiClient {
 		$response = wp_remote_post( $this->api_url, $args );
 
 		if ( is_wp_error( $response ) ) {
+			error_log( 'Sam Anti Spam API Connection Failed: ' . $response->get_error_message() );
 			return $fallback;
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 		if ( $status_code !== 200 ) {
+			error_log( 'Sam Anti Spam API Connection Failed: HTTP ' . $status_code );
 			return $fallback;
 		}
 
@@ -52,6 +54,7 @@ class ApiClient {
 		$parsed = json_decode( $body, true );
 
 		if ( ! is_array( $parsed ) ) {
+			error_log( 'Sam Anti Spam API Connection Failed: Invalid JSON response.' );
 			return $fallback;
 		}
 
