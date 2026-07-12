@@ -2,6 +2,7 @@
 namespace SamAntiSpam\Integration;
 
 use SamAntiSpam\Core\AjaxHandler;
+use SamAntiSpam\Core\ApiClient;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,7 +31,9 @@ class Hooks {
 		$content = isset( $commentdata['comment_content'] ) ? $commentdata['comment_content'] : '';
 		$email   = isset( $commentdata['comment_author_email'] ) ? $commentdata['comment_author_email'] : '';
 
-		if ( AjaxHandler::is_spam( 'Comment', $content, $email ) ) {
+		$is_spam = AjaxHandler::is_spam( 'Comment', $content, $email );
+		if ( $is_spam ) {
+			$this->report_to_cloud( $email, 'Local Heuristics Triggered (Comment)' );
 			// Mark as spam ('spam') or hold for moderation ('0')
 			return 'spam';
 		}
@@ -39,6 +42,7 @@ class Hooks {
 
 	public function filter_registrations( $errors, $sanitized_user_login, $user_email ) {
 		if ( AjaxHandler::is_spam( 'Registration', '', $user_email ) ) {
+			$this->report_to_cloud( $user_email, 'Local Heuristics Triggered (Registration)' );
 			$errors->add( 'spam_registration', __( '<strong>ERROR</strong>: Automated registration detected.', 'sam-anti-spam' ) );
 		}
 		return $errors;
@@ -56,6 +60,7 @@ class Hooks {
 		}
 
 		if ( AjaxHandler::is_spam( 'Contact Form 7', $content, $email ) ) {
+			$this->report_to_cloud( $email, 'Local Heuristics Triggered (Contact Form 7)' );
 			$result->invalidate( $tags[0], __( 'Spam detected. Please try again.', 'sam-anti-spam' ) );
 		}
 		return $result;
@@ -65,7 +70,18 @@ class Hooks {
 		$email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : '';
 
 		if ( AjaxHandler::is_spam( 'WooCommerce Checkout', '', $email ) ) {
+			$this->report_to_cloud( $email, 'Local Heuristics Triggered (WooCommerce Checkout)' );
 			wc_add_notice( __( 'Checkout blocked due to suspicious activity.', 'sam-anti-spam' ), 'error' );
 		}
+	}
+
+	private function report_to_cloud( $email, $reason ) {
+		$api_client = new ApiClient();
+		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		$api_client->report_spam( array(
+			'ip'     => $ip,
+			'email'  => $email,
+			'reason' => $reason
+		) );
 	}
 }

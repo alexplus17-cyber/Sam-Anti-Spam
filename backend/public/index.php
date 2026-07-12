@@ -34,6 +34,7 @@ try {
     $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
         $r->addRoute('POST', '/v1/check', 'check_spam_handler');
         $r->addRoute('GET', '/v1/sfw-list', 'sfw_list_handler');
+        $r->addRoute('POST', '/v1/report', 'report_handler');
     });
 
     // 6. Dispatch Logic
@@ -84,6 +85,17 @@ try {
                 }
 
                 $controller = new \SamApi\Controllers\SfwListController($pdo);
+                $controller->handle();
+
+            } elseif ($handler === 'report_handler') {
+                $auth = new \SamApi\Middleware\AuthMiddleware($pdo);
+                if (!$auth->authenticate()) {
+                    http_response_code(401);
+                    echo json_encode(['error' => 'Unauthorized']);
+                    break;
+                }
+
+                $controller = new \SamApi\Controllers\ReportController($pdo);
                 $controller->handle();
 
             } else {

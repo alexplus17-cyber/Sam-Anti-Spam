@@ -8,13 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ApiClient {
 
 	private $api_url = 'https://api.samantispam.com/v2/check';
+	private $report_url = 'https://api.samantispam.com/v1/report';
+	private $api_key = '';
 
 	public function __construct() {
 		// Override default API URL if set in settings
 		$options = get_option( 'sam_antispam_settings' );
 		if ( ! empty( $options['api_key'] ) ) {
-			// In a real scenario, the API key might dictate a specific endpoint or be passed as a header
-			// We just keep the default endpoint for now.
+			$this->api_key = sanitize_text_field( $options['api_key'] );
 		}
 	}
 
@@ -32,7 +33,8 @@ class ApiClient {
 		$args = array(
 			'body'    => wp_json_encode( $data ),
 			'headers' => array(
-				'Content-Type' => 'application/json',
+				'Content-Type'  => 'application/json',
+				'Authorization' => 'Bearer ' . $this->api_key,
 			),
 			'timeout' => 2, // Critical: 2 seconds max
 		);
@@ -59,5 +61,23 @@ class ApiClient {
 		}
 
 		return $parsed;
+	}
+
+	/**
+	 * Report a spammer to the Cloud API non-blockingly.
+	 *
+	 * @param array $data Data to send (ip, email, reason).
+	 */
+	public function report_spam( array $data ) {
+		$args = array(
+			'body'     => wp_json_encode( $data ),
+			'headers'  => array(
+				'Content-Type'  => 'application/json',
+				'Authorization' => 'Bearer ' . $this->api_key,
+			),
+			'blocking' => false, // Critical: Fire-and-forget
+		);
+
+		wp_remote_post( $this->report_url, $args );
 	}
 }

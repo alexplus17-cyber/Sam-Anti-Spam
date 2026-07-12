@@ -1,6 +1,8 @@
 <?php
 namespace SamAntiSpam\TrafficControl;
 
+use SamAntiSpam\Core\ApiClient;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -43,6 +45,14 @@ class RateLimiter {
 
 			// If more than 60 requests per minute, block
 			if ( $requests > 60 ) {
+				// Report spammer to cloud asynchronously before dying
+				$api_client = new ApiClient();
+				$api_client->report_spam( array(
+					'ip'     => $ip,
+					'email'  => '', // No email known at this level
+					'reason' => 'Rate Limit Exceeded (Over 60 requests/min)'
+				) );
+
 				wp_die( esc_html__( 'Rate limit exceeded. Please try again later.', 'sam-anti-spam' ), esc_html__( 'Sam Anti Spam', 'sam-anti-spam' ), array( 'response' => 429 ) );
 			}
 
