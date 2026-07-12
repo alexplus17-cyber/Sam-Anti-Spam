@@ -41,6 +41,13 @@ The SFW currently relies on `.htaccess` rules (`php_value auto_prepend_file`), w
 = What if I get locked out by the FireWall? =
 You can use the **Restore .htaccess** button in the settings, or manually edit your `.htaccess` file via FTP to remove the `auto_prepend_file` rule.
 
+== Screenshots ==
+
+1. The clean, tabbed Settings dashboard.
+2. The Spam FireWall configuration and status.
+3. Integration settings for WooCommerce and Contact Form 7.
+4. The comprehensive Spam Log view.
+
 == Changelog ==
 
 = 1.0.0 =
@@ -52,3 +59,8 @@ You can use the **Restore .htaccess** button in the settings, or manually edit y
 * Added Phase 5: Security hardening and QA fixes.
 * Added Phase 6: Asynchronous Cloud reporting.
 * Added Phase 7: Dynamic onboarding and registration.
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial release. No upgrade necessary.

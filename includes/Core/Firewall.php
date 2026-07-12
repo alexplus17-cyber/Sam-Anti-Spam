@@ -91,9 +91,13 @@ class Firewall {
 			return false;
 		}
 
-		// Backup existing .htaccess
-		$current_contents = file_get_contents( $htaccess_file );
-		update_option( 'sam_sfw_htaccess_backup', $current_contents, false );
+		// Backup existing .htaccess ONLY if a backup doesn't already exist.
+		// This prevents overwriting a clean backup with a firewall-injected version
+		// if the user saves settings multiple times.
+		if ( false === get_option( 'sam_sfw_htaccess_backup' ) ) {
+			$current_contents = file_get_contents( $htaccess_file );
+			add_option( 'sam_sfw_htaccess_backup', $current_contents, '', 'no' );
+		}
 
 		// Wrap in IfModule to prevent FastCGI 500 errors
 		$rule = "<IfModule mod_php.c>\n";
