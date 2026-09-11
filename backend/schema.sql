@@ -1,0 +1,30 @@
+-- Database Schema for Sam Anti Spam Cloud Backend API
+
+CREATE TABLE IF NOT EXISTS spam_reports (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    email VARCHAR(255) DEFAULT NULL,
+    user_agent TEXT DEFAULT NULL,
+    content_hash VARCHAR(64) DEFAULT NULL,
+    spam_score DECIMAL(5,2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS firewall_blacklist (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    reason VARCHAR(255) NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL DEFAULT NULL,
+    UNIQUE KEY unique_ip (ip)
+);
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    website_domain VARCHAR(255) NOT NULL,
+    api_key_hash VARCHAR(255) NOT NULL,
+    rate_limit INT DEFAULT 1000,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_domain (website_domain)
+);

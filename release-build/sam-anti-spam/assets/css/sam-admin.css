@@ -1,0 +1,1261 @@
+/* ==========================================================================
+   Sam Anti Spam — Security Control Center
+   Scoped exclusively under .sam-anti-spam-wrap (and .sam-wizard-* on Setup).
+   ========================================================================== */
+
+.sam-anti-spam-wrap {
+	--sam-primary: #1b6df5;
+	--sam-primary-dark: #0d4fd0;
+	--sam-primary-soft: rgba(27, 109, 245, 0.1);
+	--sam-accent: #0891b2;
+	--sam-accent-soft: rgba(8, 145, 178, 0.1);
+	--sam-bg: #f3f6fb;
+	--sam-surface: #ffffff;
+	--sam-surface-elevated: #f8fafc;
+	--sam-ink: #101828;
+	--sam-ink-2: #1e293b;
+	--sam-border: #e2e8f0;
+	--sam-border-strong: #cbd5e1;
+	--sam-text: #101828;
+	--sam-muted: #64748b;
+	--sam-success: #15803d;
+	--sam-success-soft: rgba(21, 128, 61, 0.1);
+	--sam-warning: #b45309;
+	--sam-warning-soft: rgba(180, 83, 9, 0.1);
+	--sam-danger: #b91c1c;
+	--sam-danger-soft: rgba(185, 28, 28, 0.08);
+	--sam-radius: 14px;
+	--sam-radius-sm: 8px;
+	--sam-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 30px -12px rgba(16, 24, 40, 0.12);
+	--sam-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+	--sam-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+	box-sizing: border-box;
+}
+
+.sam-anti-spam-wrap *,
+.sam-anti-spam-wrap *::before,
+.sam-anti-spam-wrap *::after {
+	box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   Typography helpers
+   -------------------------------------------------------------------------- */
+.sam-anti-spam-wrap .sam-eyebrow {
+	display: block;
+	margin: 0 0 6px;
+	font-size: 11px;
+	line-height: 1.6;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--sam-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+.sam-head {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: linear-gradient(135deg, #0f172a 0%, #101c33 55%, #12264a 100%);
+	border-radius: var(--sam-radius);
+	padding: 20px 24px;
+	margin-bottom: 20px;
+	color: #fff;
+	box-shadow: var(--sam-shadow);
+	position: relative;
+	overflow: hidden;
+}
+
+.sam-head::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(600px 120px at 88% -40%, rgba(27, 109, 245, 0.45), transparent 60%),
+		radial-gradient(500px 160px at 70% 140%, rgba(8, 145, 178, 0.25), transparent 60%);
+	pointer-events: none;
+}
+
+.sam-logo {
+	flex: 0 0 auto;
+	width: 46px;
+	height: 46px;
+	border-radius: 12px;
+	display: grid;
+	place-items: center;
+	background: linear-gradient(135deg, #1b6df5, #0891b2);
+	box-shadow: 0 6px 18px -6px rgba(27, 109, 245, 0.7);
+}
+
+.sam-logo svg {
+	display: block;
+	width: 26px;
+	height: 26px;
+}
+
+.sam-head__text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.sam-head__title {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.sam-head__badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #bae6fd;
+	background: rgba(8, 145, 178, 0.18);
+	border: 1px solid rgba(8, 145, 178, 0.5);
+	border-radius: 999px;
+	padding: 3px 10px;
+	white-space: nowrap;
+}
+
+.sam-head__badge svg {
+	width: 12px;
+	height: 12px;
+	fill: #7dd3fc;
+}
+
+.sam-head__subtitle {
+	margin: 4px 0 0;
+	font-size: 13px;
+	color: #a5b4c8;
+}
+
+.sam-head__actions {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.sam-head__version {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	color: #cbd5e1;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 999px;
+	padding: 3px 10px;
+	white-space: nowrap;
+}
+
+.sam-dark-btn,
+.sam-dark-btn:link,
+.sam-dark-btn:visited {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(255, 255, 255, 0.18);
+	color: #e2e8f0;
+	box-shadow: none;
+	text-shadow: none;
+	backdrop-filter: blur(4px);
+}
+
+.sam-dark-btn:hover {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.3);
+	color: #fff;
+}
+
+.sam-anti-spam-wrap code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	font-size: 12px;
+	background: rgba(16, 24, 40, 0.05);
+	border: 1px solid var(--sam-border);
+	border-radius: 5px;
+	padding: 1px 6px;
+	color: var(--sam-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.sam-anti-spam-wrap .button,
+.sam-anti-spam-wrap .button:link,
+.sam-anti-spam-wrap .button:visited {
+	border-radius: var(--sam-radius-sm);
+	font-size: 13px;
+	line-height: 2.2;
+	min-height: 34px;
+	padding: 0 16px;
+	border: 1px solid var(--sam-border-strong);
+	background: var(--sam-surface);
+	color: var(--sam-text);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+	transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+	cursor: pointer;
+}
+
+.sam-anti-spam-wrap .button:hover {
+	background: var(--sam-surface-elevated);
+	border-color: #94a3b8;
+}
+
+.sam-anti-spam-wrap .button:active {
+	transform: translateY(1px);
+}
+
+.sam-anti-spam-wrap .button:focus,
+.sam-anti-spam-wrap .button:focus-visible {
+	border-color: var(--sam-primary);
+	box-shadow: 0 0 0 2px var(--sam-primary-soft);
+	outline: none;
+}
+
+.sam-anti-spam-wrap .button-primary,
+.sam-anti-spam-wrap .button-primary:link,
+.sam-anti-spam-wrap .button-primary:visited {
+	background: linear-gradient(135deg, var(--sam-primary), var(--sam-primary-dark));
+	border-color: var(--sam-primary-dark);
+	color: #fff;
+	box-shadow: 0 1px 2px rgba(13, 79, 208, 0.35);
+	text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.sam-anti-spam-wrap .button-primary:hover {
+	background: linear-gradient(135deg, #2b7bf7, #0b47bf);
+	border-color: #0b47bf;
+	color: #fff;
+}
+
+.sam-anti-spam-wrap .button-secondary {
+	background: var(--sam-surface-elevated);
+	color: var(--sam-text);
+}
+
+.sam-anti-spam-wrap .button-danger,
+.sam-anti-spam-wrap .button-danger:link,
+.sam-anti-spam-wrap .button-danger:visited {
+	background: var(--sam-danger-soft);
+	border-color: rgba(185, 28, 28, 0.35);
+	color: var(--sam-danger);
+	box-shadow: none;
+}
+
+.sam-anti-spam-wrap .button-danger:hover {
+	background: rgba(185, 28, 28, 0.14);
+	border-color: var(--sam-danger);
+	color: var(--sam-danger);
+}
+
+.sam-anti-spam-wrap .submit {
+	margin: 0;
+	padding: 0;
+}
+
+.sam-anti-spam-wrap .submit .button {
+	min-height: 38px;
+	font-weight: 600;
+	padding: 0 22px;
+}
+
+/* --------------------------------------------------------------------------
+   Pills / status badges
+   -------------------------------------------------------------------------- */
+.sam-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 6px 12px;
+	border-radius: 999px;
+	border: 1px solid var(--sam-border);
+	background: var(--sam-surface-elevated);
+	color: var(--sam-muted);
+	white-space: nowrap;
+}
+
+.sam-pill .dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+	flex: 0 0 auto;
+}
+
+.sam-pill.is-success {
+	background: var(--sam-success-soft);
+	border-color: rgba(21, 128, 61, 0.3);
+	color: var(--sam-success);
+}
+
+.sam-pill.is-warning {
+	background: var(--sam-warning-soft);
+	border-color: rgba(180, 83, 9, 0.3);
+	color: var(--sam-warning);
+}
+
+.sam-pill.is-danger {
+	background: var(--sam-danger-soft);
+	border-color: rgba(185, 28, 28, 0.3);
+	color: var(--sam-danger);
+}
+
+.sam-pill.is-accent {
+	background: var(--sam-accent-soft);
+	border-color: rgba(8, 145, 178, 0.3);
+	color: var(--sam-accent);
+}
+
+.sam-pill.is-primary {
+	background: var(--sam-primary-soft);
+	border-color: rgba(27, 109, 245, 0.3);
+	color: var(--sam-primary-dark);
+}
+
+/* --------------------------------------------------------------------------
+   Hero overview cards
+   -------------------------------------------------------------------------- */
+.sam-hero {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.sam-hero-card {
+	background: var(--sam-surface);
+	border: 1px solid var(--sam-border);
+	border-radius: var(--sam-radius);
+	padding: 18px 20px;
+	box-shadow: var(--sam-shadow-sm);
+	position: relative;
+	overflow: hidden;
+}
+
+.sam-hero-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, var(--sam-primary), var(--sam-accent));
+}
+
+.sam-hero-card__row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.sam-hero-card__title {
+	margin: 0 0 4px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--sam-muted);
+}
+
+.sam-hero-card__value {
+	margin: 0;
+	font-size: 26px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
+	color: var(--sam-text);
+}
+
+.sam-hero-card__value small {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--sam-muted);
+}
+
+.sam-hero-card__value.is-success {
+	color: var(--sam-success);
+}
+
+.sam-hero-card__value.is-warning {
+	color: var(--sam-warning);
+}
+
+.sam-hero-card__meta {
+	margin: 6px 0 0;
+	font-size: 12px;
+	color: var(--sam-muted);
+}
+
+.sam-hero-card__icon {
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	display: grid;
+	place-items: center;
+	background: var(--sam-primary-soft);
+}
+
+.sam-hero-card__icon svg {
+	width: 20px;
+	height: 20px;
+}
+
+.sam-hero-card__icon.is-accent {
+	background: var(--sam-accent-soft);
+}
+
+.sam-hero-card__icon.is-success {
+	background: var(--sam-success-soft);
+}
+
+.sam-hero-card__icon.is-warning {
+	background: var(--sam-warning-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Layout: sidebar + content
+   -------------------------------------------------------------------------- */
+.sam-layout {
+	display: grid;
+	grid-template-columns: 232px minmax(0, 1fr);
+	gap: 24px;
+	align-items: start;
+}
+
+.sam-sidebar {
+	position: sticky;
+	top: 46px;
+}
+
+.sam-nav {
+	margin: 0;
+	padding: 8px;
+	list-style: none;
+	background: var(--sam-surface);
+	border: 1px solid var(--sam-border);
+	border-radius: var(--sam-radius);
+	box-shadow: var(--sam-shadow-sm);
+}
+
+.sam-nav__item {
+	margin: 0;
+}
+
+.sam-nav__link {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border-radius: var(--sam-radius-sm);
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--sam-text);
+	text-decoration: none;
+	position: relative;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sam-nav__link svg {
+	width: 17px;
+	height: 17px;
+	flex: 0 0 auto;
+	color: var(--sam-muted);
+	transition: color 0.15s ease;
+}
+
+.sam-nav__link:hover {
+	background: var(--sam-surface-elevated);
+	color: var(--sam-primary-dark);
+}
+
+.sam-nav__link:hover svg {
+	color: var(--sam-primary);
+}
+
+.sam-nav__link:focus-visible {
+	outline: 2px solid var(--sam-primary);
+	outline-offset: 1px;
+}
+
+.sam-nav__item.is-active .sam-nav__link {
+	background: var(--sam-primary-soft);
+	color: var(--sam-primary-dark);
+	font-weight: 600;
+}
+
+.sam-nav__item.is-active .sam-nav__link svg {
+	color: var(--sam-primary);
+}
+
+.sam-nav__item.is-active .sam-nav__link::before {
+	content: "";
+	position: absolute;
+	left: -8px;
+	top: 8px;
+	bottom: 8px;
+	width: 3px;
+	border-radius: 3px;
+	background: linear-gradient(to bottom, var(--sam-primary), var(--sam-accent));
+}
+
+.sam-nav__meta {
+	display: block;
+	margin: 10px 12px 4px;
+	font-size: 10.5px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--sam-muted);
+}
+
+.sam-content {
+	min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+.sam-card {
+	background: var(--sam-surface);
+	border: 1px solid var(--sam-border);
+	border-radius: var(--sam-radius);
+	box-shadow: var(--sam-shadow-sm);
+	overflow: hidden;
+}
+
+.sam-card + .sam-card {
+	margin-top: 20px;
+}
+
+.sam-card__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 18px 24px;
+	border-bottom: 1px solid var(--sam-border);
+	background: var(--sam-surface-elevated);
+}
+
+.sam-card__title {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--sam-text);
+}
+
+.sam-card__desc {
+	margin: 3px 0 0;
+	font-size: 12.5px;
+	color: var(--sam-muted);
+}
+
+.sam-card__body {
+	padding: 22px 24px;
+}
+
+.sam-card__footer {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+	padding: 16px 24px;
+	border-top: 1px solid var(--sam-border);
+	background: var(--sam-surface-elevated);
+}
+
+/* --------------------------------------------------------------------------
+   Settings form (WordPress Settings API output)
+   -------------------------------------------------------------------------- */
+.sam-anti-spam-wrap .form-table {
+	margin: 0;
+	border-collapse: collapse;
+}
+
+.sam-anti-spam-wrap .form-table th,
+.sam-anti-spam-wrap .form-table td {
+	border: none;
+	border-bottom: 1px solid var(--sam-border);
+	padding: 16px 0;
+	vertical-align: top;
+}
+
+.sam-anti-spam-wrap .form-table tr:last-child th,
+.sam-anti-spam-wrap .form-table tr:last-child td {
+	border-bottom: none;
+}
+
+.sam-anti-spam-wrap .form-table th {
+	width: 240px;
+	padding-right: 24px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--sam-text);
+}
+
+.sam-anti-spam-wrap .form-table th label {
+	display: flex;
+	align-items: center;
+	min-height: 26px;
+	cursor: pointer;
+}
+
+.sam-anti-spam-wrap .form-table td {
+	font-size: 13px;
+	color: var(--sam-text);
+}
+
+.sam-anti-spam-wrap .form-table .description {
+	margin: 6px 0 0;
+	font-size: 12px;
+	color: var(--sam-muted);
+	line-height: 1.55;
+}
+
+.sam-anti-spam-wrap .form-table .description strong {
+	color: var(--sam-warning);
+	font-weight: 600;
+}
+
+.sam-anti-spam-wrap .form-table h2 {
+	margin: 0 0 2px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--sam-muted);
+}
+
+.sam-anti-spam-wrap .form-table tr:first-child td {
+	padding-top: 4px;
+}
+
+.sam-anti-spam-wrap input[type="text"],
+.sam-anti-spam-wrap input[type="url"],
+.sam-anti-spam-wrap input[type="email"],
+.sam-anti-spam-wrap input[type="password"],
+.sam-anti-spam-wrap input[type="number"],
+.sam-anti-spam-wrap select,
+.sam-anti-spam-wrap textarea {
+	max-width: 440px;
+	width: 100%;
+	border: 1px solid var(--sam-border-strong);
+	border-radius: var(--sam-radius-sm);
+	background: var(--sam-surface);
+	color: var(--sam-text);
+	font-size: 13px;
+	padding: 7px 10px;
+	line-height: 1.5;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sam-anti-spam-wrap input[type="text"]:focus,
+.sam-anti-spam-wrap input[type="url"]:focus,
+.sam-anti-spam-wrap input[type="email"]:focus,
+.sam-anti-spam-wrap input[type="password"]:focus,
+.sam-anti-spam-wrap input[type="number"]:focus,
+.sam-anti-spam-wrap select:focus,
+.sam-anti-spam-wrap textarea:focus {
+	border-color: var(--sam-primary);
+	box-shadow: 0 0 0 2px var(--sam-primary-soft);
+	outline: none;
+}
+
+.sam-anti-spam-wrap textarea {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	min-height: 110px;
+	resize: vertical;
+}
+
+.sam-anti-spam-wrap .regular-text {
+	width: 100%;
+	max-width: 440px;
+}
+
+/* Toggle switches for the settings checkboxes */
+.sam-anti-spam-wrap .form-table input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 40px;
+	height: 22px;
+	border-radius: 999px;
+	background: #cbd5e1;
+	border: 1px solid #b6c2d4;
+	position: relative;
+	cursor: pointer;
+	flex: 0 0 auto;
+	transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+	margin: 0;
+	box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.sam-anti-spam-wrap .form-table input[type="checkbox"]::before {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #ffffff;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.25);
+	transition: transform 0.18s ease;
+}
+
+.sam-anti-spam-wrap .form-table input[type="checkbox"]:checked {
+	background: linear-gradient(135deg, var(--sam-primary), var(--sam-primary-dark));
+	border-color: var(--sam-primary-dark);
+}
+
+.sam-anti-spam-wrap .form-table input[type="checkbox"]:checked::before {
+	transform: translateX(18px);
+}
+
+.sam-anti-spam-wrap .form-table input[type="checkbox"]:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sam-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Cloud connection panel (also rebuilt by admin.js)
+   -------------------------------------------------------------------------- */
+.sam-cloud {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 18px;
+	border: 1px solid var(--sam-border);
+	border-radius: var(--sam-radius-sm);
+	background: var(--sam-surface-elevated);
+}
+
+.sam-cloud__icon {
+	flex: 0 0 auto;
+	width: 42px;
+	height: 42px;
+	border-radius: 10px;
+	display: grid;
+	place-items: center;
+	background: var(--sam-primary-soft);
+}
+
+.sam-cloud__icon svg {
+	width: 22px;
+	height: 22px;
+}
+
+.sam-cloud__icon.is-success {
+	background: var(--sam-success-soft);
+}
+
+.sam-cloud__icon.is-warning {
+	background: var(--sam-warning-soft);
+}
+
+.sam-cloud__body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.sam-cloud__status {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--sam-text);
+}
+
+.sam-cloud__detail {
+	margin: 3px 0 0;
+	font-size: 12px;
+	color: var(--sam-muted);
+	word-break: break-word;
+}
+
+.sam-cloud__detail code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+	font-size: 11.5px;
+	background: rgba(16, 24, 40, 0.05);
+	border: 1px solid var(--sam-border);
+	border-radius: 5px;
+	padding: 1px 6px;
+	color: var(--sam-ink);
+}
+
+.sam-cloud__actions {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.sam-anti-spam-wrap .spinner {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	background-size: 18px 18px;
+	float: none;
+	vertical-align: middle;
+}
+
+/* --------------------------------------------------------------------------
+   Danger zone (troubleshooting / .htaccess restore)
+   -------------------------------------------------------------------------- */
+.sam-danger-zone {
+	border: 1px solid rgba(185, 28, 28, 0.28);
+	background: linear-gradient(180deg, rgba(185, 28, 28, 0.04), transparent 55%), var(--sam-surface);
+}
+
+.sam-danger-zone .sam-card__head {
+	border-bottom-color: rgba(185, 28, 28, 0.16);
+	background: rgba(185, 28, 28, 0.04);
+}
+
+.sam-danger-zone .sam-card__title {
+	color: var(--sam-danger);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.sam-danger-zone .sam-card__title svg {
+	width: 16px;
+	height: 16px;
+}
+
+.sam-anti-spam-wrap .sam-body-text {
+	margin: 0;
+	font-size: 13px;
+	color: var(--sam-muted);
+	line-height: 1.6;
+}
+
+.sam-alert {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 12px 16px;
+	border-radius: var(--sam-radius-sm);
+	border: 1px solid;
+	font-size: 12.5px;
+	line-height: 1.55;
+}
+
+.sam-alert svg {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	margin-top: 1px;
+}
+
+.sam-alert.is-warning {
+	background: var(--sam-warning-soft);
+	border-color: rgba(180, 83, 9, 0.3);
+	color: #78350f;
+}
+
+.sam-alert.is-info {
+	background: var(--sam-accent-soft);
+	border-color: rgba(8, 145, 178, 0.3);
+	color: #155e75;
+}
+
+.sam-anti-spam-wrap .sam-inline-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.sam-anti-spam-wrap .sam-inline-list li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 13px;
+	color: var(--sam-text);
+}
+
+.sam-anti-spam-wrap .sam-inline-list .sam-kv {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.sam-anti-spam-wrap .sam-inline-list .sam-kv strong {
+	font-weight: 600;
+	color: var(--sam-text);
+}
+
+/* --------------------------------------------------------------------------
+   Spam Log table (WP_List_Table)
+   -------------------------------------------------------------------------- */
+.sam-anti-spam-wrap #sam-spam-log-form {
+	margin: 0;
+}
+
+.sam-anti-spam-wrap .tablenav {
+	margin: 0;
+	height: auto;
+	min-height: 34px;
+	padding: 12px 0;
+}
+
+.sam-anti-spam-wrap .tablenav.top {
+	border-bottom: 1px solid var(--sam-border);
+	background: var(--sam-surface-elevated);
+	padding: 12px 16px;
+	margin: 0;
+}
+
+.sam-anti-spam-wrap .tablenav.bottom {
+	border-top: 1px solid var(--sam-border);
+	background: var(--sam-surface-elevated);
+	padding: 10px 16px;
+	margin: 0;
+}
+
+.sam-anti-spam-wrap .tablenav .actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.sam-anti-spam-wrap .tablenav select {
+	width: auto;
+	min-height: 32px;
+}
+
+.sam-anti-spam-wrap .tablenav .button {
+	min-height: 32px;
+}
+
+.sam-anti-spam-wrap .tablenav-pages {
+	float: none;
+	text-align: right;
+	margin: 0;
+}
+
+.sam-anti-spam-wrap .tablenav-pages .pagination-links .button {
+	min-height: 28px;
+	line-height: 2;
+	border-radius: 6px;
+}
+
+.sam-anti-spam-wrap .wp-list-table {
+	border: none;
+	border-collapse: separate;
+	border-spacing: 0;
+	width: 100%;
+	margin: 0;
+	box-shadow: none;
+}
+
+.sam-anti-spam-wrap .wp-list-table thead th,
+.sam-anti-spam-wrap .wp-list-table tfoot th {
+	background: var(--sam-surface-elevated);
+	border: none;
+	border-bottom: 1px solid var(--sam-border);
+	color: var(--sam-muted);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	padding: 12px 12px;
+}
+
+.sam-anti-spam-wrap .wp-list-table tfoot th {
+	border-top: 1px solid var(--sam-border);
+	border-bottom: none;
+}
+
+.sam-anti-spam-wrap .wp-list-table tbody td {
+	border-bottom: 1px solid var(--sam-border);
+	border-top: none;
+	padding: 12px;
+	font-size: 13px;
+	color: var(--sam-text);
+}
+
+.sam-anti-spam-wrap .wp-list-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.sam-anti-spam-wrap .wp-list-table tbody tr:hover td {
+	background: rgba(27, 109, 245, 0.03);
+}
+
+.sam-anti-spam-wrap .wp-list-table tbody tr:nth-child(odd) {
+	background: var(--sam-surface);
+}
+
+.sam-anti-spam-wrap .wp-list-table tbody tr:nth-child(even) {
+	background: var(--sam-surface-elevated);
+}
+
+.sam-anti-spam-wrap .wp-list-table .column-cb,
+.sam-anti-spam-wrap .wp-list-table th.column-cb {
+	padding-right: 8px;
+}
+
+.sam-anti-spam-wrap .wp-list-table .row-actions {
+	color: var(--sam-muted);
+	font-size: 12px;
+}
+
+.sam-anti-spam-wrap .wp-list-table .row-actions a {
+	color: var(--sam-primary-dark);
+}
+
+.sam-anti-spam-wrap .wp-list-table .row-actions a:hover {
+	color: var(--sam-primary);
+}
+
+.sam-anti-spam-wrap input[type="checkbox"].sam-log-cb {
+	accent-color: var(--sam-primary);
+}
+
+.sam-anti-spam-wrap .wp-list-table thead input[type="checkbox"],
+.sam-anti-spam-wrap .wp-list-table tbody input[type="checkbox"] {
+	accent-color: var(--sam-primary);
+}
+
+.sam-anti-spam-wrap .wp-list-table .column-action_type {
+	white-space: nowrap;
+}
+
+.sam-empty-list-note {
+	display: block;
+	padding: 10px 4px 0;
+	color: var(--sam-muted);
+	font-size: 12.5px;
+}
+
+/* Blocked reason chips */
+.sam-reason {
+	display: inline-block;
+	font-size: 11.5px;
+	font-weight: 500;
+	color: var(--sam-ink-2);
+	background: var(--sam-surface-elevated);
+	border: 1px solid var(--sam-border);
+	border-radius: 6px;
+	padding: 2px 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Setup wizard (shared with the Setup page)
+   -------------------------------------------------------------------------- */
+.sam-wizard-steps {
+	list-style: none;
+	display: flex;
+	gap: 8px;
+	margin: 0 0 20px;
+	padding: 0;
+	flex-wrap: wrap;
+}
+
+.sam-wizard-steps li {
+	background: var(--sam-surface);
+	border: 1px solid var(--sam-border);
+	border-radius: 999px;
+	padding: 7px 16px;
+	font-size: 12.5px;
+	font-weight: 500;
+	color: var(--sam-muted);
+}
+
+.sam-wizard-steps li.is-active {
+	background: linear-gradient(135deg, var(--sam-primary), var(--sam-primary-dark));
+	border-color: var(--sam-primary-dark);
+	color: #fff;
+	font-weight: 600;
+	box-shadow: 0 1px 2px rgba(13, 79, 208, 0.3);
+}
+
+.sam-wizard-panel {
+	background: var(--sam-surface);
+	border: 1px solid var(--sam-border);
+	border-radius: var(--sam-radius);
+	box-shadow: var(--sam-shadow-sm);
+	padding: 26px 30px;
+	max-width: 780px;
+}
+
+.sam-wizard-panel h2 {
+	margin: 0 0 8px;
+	font-size: 18px;
+	letter-spacing: -0.01em;
+	color: var(--sam-text);
+}
+
+.sam-wizard-panel p,
+.sam-wizard-panel li {
+	font-size: 13.5px;
+	line-height: 1.65;
+	color: var(--sam-ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   Notices inside the wrapper
+   -------------------------------------------------------------------------- */
+.sam-anti-spam-wrap .notice {
+	border-radius: var(--sam-radius-sm);
+	box-shadow: var(--sam-shadow-sm);
+}
+
+.sam-anti-spam-wrap .notice p {
+	font-size: 13px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 1080px) {
+	.sam-anti-spam-wrap .form-table th {
+		width: 200px;
+	}
+}
+
+@media (max-width: 960px) {
+	.sam-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.sam-sidebar {
+		position: static;
+	}
+
+	.sam-nav {
+		display: flex;
+		align-items: center;
+		overflow-x: auto;
+		gap: 4px;
+		padding: 6px;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.sam-nav__item {
+		flex: 0 0 auto;
+	}
+
+	.sam-nav__meta {
+		display: none;
+	}
+
+	.sam-nav__item.is-active .sam-nav__link::before {
+		left: 6px;
+		right: 6px;
+		top: auto;
+		bottom: -6px;
+		width: auto;
+		height: 3px;
+	}
+
+	.sam-head__actions {
+		margin-left: auto;
+	}
+
+	.sam-hero {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 782px) {
+	.sam-head {
+		flex-wrap: wrap;
+		padding: 18px 20px;
+	}
+
+	.sam-head__title {
+		font-size: 18px;
+	}
+
+	.sam-head__actions {
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.sam-card__body {
+		padding: 18px 20px;
+	}
+
+	.sam-card__head,
+	.sam-card__footer {
+		padding: 16px 20px;
+	}
+
+	.sam-anti-spam-wrap .form-table th,
+	.sam-anti-spam-wrap .form-table td {
+		display: block;
+		width: 100%;
+		padding: 12px 0;
+	}
+
+	.sam-anti-spam-wrap .form-table th {
+		padding-top: 18px;
+		padding-bottom: 4px;
+	}
+
+	.sam-anti-spam-wrap .form-table th label {
+		min-height: 0;
+	}
+
+	.sam-cloud {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.sam-cloud__actions {
+		width: 100%;
+	}
+
+	.sam-anti-spam-wrap input[type="text"],
+	.sam-anti-spam-wrap input[type="url"],
+	.sam-anti-spam-wrap input[type="email"],
+	.sam-anti-spam-wrap select,
+	.sam-anti-spam-wrap textarea {
+		max-width: none;
+	}
+
+	.sam-anti-spam-wrap .tablenav.top,
+	.sam-anti-spam-wrap .tablenav.bottom {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.sam-anti-spam-wrap .wp-list-table {
+		display: block;
+		overflow-x: auto;
+	}
+
+	.sam-wizard-panel {
+		padding: 18px 16px;
+	}
+}
