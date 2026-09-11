@@ -1,4 +1,4 @@
-name: PHP Lint
+name: PHP Lint and WordPress Plugin Checks
 
 on:
   workflow_dispatch:
@@ -19,7 +19,20 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          tools: phpcs
+
+      - name: Install WordPress Coding Standards
+        run: |
+          export PATH="$HOME/.composer/vendor/bin:$PATH"
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.10
+          composer global require --no-interaction --no-progress wp-coding-standards/wpcs:^3.0
+          phpcs --config-set installed_paths "$HOME/.composer/vendor/wp-coding-standards/wpcs"
 
       - name: PHP syntax check
         run: |
-          find . -name '*.php' -not -path './backend/vendor/*' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+          find . -path './backend/vendor' -prune -o -path './release-build' -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: WordPress coding standard check
+        run: |
+          phpcs --standard=WordPress --extensions=php --ignore=backend/**,release-build/**,**/vendor/** .
