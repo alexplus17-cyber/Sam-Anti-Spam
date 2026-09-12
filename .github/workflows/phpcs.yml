@@ -6,6 +6,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
   phpcs:
@@ -37,3 +39,34 @@ jobs:
             --ignore='backend/**,release-build/**,vendor/**,uninstall.php' .; then
             true
           fi
+
+  build:
+    name: Plugin zip
+    needs: [ phpcs ]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'release'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Build plugin zip
+        run: |
+          rsync -a \
+            --include='sam-anti-spam.php' \
+            --include='sam-sfw.php' \
+            --include='uninstall.php' \
+            --include='readme.txt' \
+            --include='includes/***' \
+            --include='assets/***' \
+            --include='languages/***' \
+            --exclude='*' \
+            . /tmp/sam-anti-spam/
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cd /tmp/sam-anti-spam
+          zip -r "$GITHUB_WORKSPACE/dist/sam-anti-spam.zip" .
+
+      - name: Upload plugin zip
+        uses: actions/upload-artifact@v5
+        with:
+          name: sam-anti-spam-plugin
+          path: dist/sam-anti-spam.zip
