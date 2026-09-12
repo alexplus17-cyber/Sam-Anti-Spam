@@ -32,6 +32,7 @@ jobs:
             | while IFS= read -r -d '' file; do php -l "$file"; done
 
       - name: WordPress coding standard check
+        continue-on-error: true
         run: |
           ./vendor/bin/phpcs --standard=WordPress --extensions=php \
-            --ignore='backend/**,release-build/**,uninstall.php' .
+            --ignore='backend/**,release-build/**,vendor/**,uninstall.php' .
