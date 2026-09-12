@@ -12,11 +12,13 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class SpamLogTable extends \WP_List_Table {
 
 	public function __construct() {
-		parent::__construct( array(
-			'singular' => 'spam_log',
-			'plural'   => 'spam_logs',
-			'ajax'     => false
-		) );
+		parent::__construct(
+			array(
+				'singular' => 'spam_log',
+				'plural'   => 'spam_logs',
+				'ajax'     => false,
+			)
+		);
 	}
 
 	public function get_columns() {
@@ -26,15 +28,15 @@ class SpamLogTable extends \WP_List_Table {
 			'ip'             => 'IP Address',
 			'email'          => 'Email',
 			'action_type'    => 'Action Type',
-			'blocked_reason' => 'Reason'
+			'blocked_reason' => 'Reason',
 		);
 	}
 
 	public function get_sortable_columns() {
 		return array(
-			'log_date'  => array( 'log_date', false ),
-			'ip'        => array( 'ip', false ),
-			'email'     => array( 'email', false ),
+			'log_date' => array( 'log_date', false ),
+			'ip'       => array( 'ip', false ),
+			'email'    => array( 'email', false ),
 		);
 	}
 
@@ -76,10 +78,10 @@ class SpamLogTable extends \WP_List_Table {
 		$blacklist_url = wp_nonce_url(
 			add_query_arg(
 				array(
-					'page'     => 'sam-anti-spam',
-					'tab'      => 'log',
-					'action'   => 'blacklist_ip',
-					'ip'       => $item['ip'],
+					'page'   => 'sam-anti-spam',
+					'tab'    => 'log',
+					'action' => 'blacklist_ip',
+					'ip'     => $item['ip'],
 				),
 				admin_url( 'options-general.php' )
 			),
@@ -127,10 +129,10 @@ class SpamLogTable extends \WP_List_Table {
 
 		$logger = new \SamAntiSpam\Core\SpamLogger();
 
-		$user     = get_current_user_id();
-		$screen   = get_current_screen();
-		$option   = $screen ? $screen->get_option( 'per_page', 'option' ) : 'sam_spam_logs_per_page';
-		$saved    = get_user_meta( $user, $option, true );
+		$user   = get_current_user_id();
+		$screen = get_current_screen();
+		$option = $screen ? $screen->get_option( 'per_page', 'option' ) : 'sam_spam_logs_per_page';
+		$saved  = get_user_meta( $user, $option, true );
 
 		if ( isset( $_REQUEST['per_page'] ) && intval( $_REQUEST['per_page'] ) > 0 ) {
 			$per_page = intval( $_REQUEST['per_page'] );
@@ -143,7 +145,7 @@ class SpamLogTable extends \WP_List_Table {
 		$this->_args['per_page'] = $per_page;
 
 		$current_page = $this->get_pagenum();
-		
+
 		$args = array(
 			'limit'   => $per_page,
 			'offset'  => ( $current_page - 1 ) * $per_page,
@@ -154,10 +156,12 @@ class SpamLogTable extends \WP_List_Table {
 		$this->items = $logger->get_logs( $args );
 		$total_items = $logger->get_total_logs();
 
-		$this->set_pagination_args( array(
-			'total_items' => $total_items,
-			'per_page'    => $per_page,
-			'total_pages' => ceil( $total_items / $per_page )
-		) );
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_items,
+				'per_page'    => $per_page,
+				'total_pages' => ceil( $total_items / $per_page ),
+			)
+		);
 	}
 }

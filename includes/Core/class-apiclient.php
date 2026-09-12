@@ -6,9 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class ApiClient {
-	private string $api_url = 'https://api.samantispam.com/v1/check';
+	private string $api_url    = 'https://api.samantispam.com/v1/check';
 	private string $report_url = 'https://api.samantispam.com/v1/report';
-	private string $api_key = '';
+	private string $api_key    = '';
 
 	public function __construct() {
 		$options = get_option( 'sam_antispam_settings', array() );

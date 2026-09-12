@@ -1,0 +1,20 @@
+{
+    "name": "alexplus17-cyber/sam-anti-spam",
+    "description": "WordPress.org submission support — PHPCS/CI only. NOT shipped in the plugin ZIP.",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "phpcsstandards/phpcsutils": "^1.0.9",
+        "squizlabs/php_codesniffer": "^3.9.2",
+        "wp-coding-standards/wpcs": "^3.1.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=WordPress --extensions=php --ignore='backend/**,release-build/**,uninstall.php' .",
+        "lint": "find . -path './backend/vendor' -prune -o -path './release-build' -prune -o -name '*.php' -print0 | while IFS= read -r -d '' file; do php -l \"$file\"; done"
+    }
+}

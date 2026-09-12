@@ -23,34 +23,36 @@ class RateLimiter {
 		}
 
 		$bot_manager = new \SamAntiSpam\Core\BotManager();
-		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+		$ua          = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		if ( $bot_manager->is_allowed_bot( $ua, $ip ) ) {
 			return;
 		}
 
-		$ip_hash = md5( $ip );
-		$transient_key = 'sam_rate_limit_' . $ip_hash;
+		$ip_hash               = md5( $ip );
+		$transient_key         = 'sam_rate_limit_' . $ip_hash;
 		$transient_timeout_key = '_transient_timeout_' . $transient_key;
-		$requests = get_transient( $transient_key );
+		$requests              = get_transient( $transient_key );
 
 		if ( false === $requests ) {
 			set_transient( $transient_key, 1, MINUTE_IN_SECONDS );
 		} else {
-			$requests++;
+			++$requests;
 
 			if ( $requests > 60 ) {
 				$api_client = new ApiClient();
-				$api_client->report_spam( array(
-					'ip'     => $ip,
-					'email'  => '',
-					'reason' => 'Rate Limit Exceeded (Over 60 requests/min)',
-				) );
+				$api_client->report_spam(
+					array(
+						'ip'     => $ip,
+						'email'  => '',
+						'reason' => 'Rate Limit Exceeded (Over 60 requests/min)',
+					)
+				);
 
 				wp_die( esc_html__( 'Rate limit exceeded. Please try again later.', 'sam-anti-spam' ), esc_html__( 'Sam Anti Spam', 'sam-anti-spam' ), array( 'response' => 429 ) );
 			}
 
 			$expiration = get_option( $transient_timeout_key );
-			$remaining = 0;
+			$remaining  = 0;
 			if ( false !== $expiration ) {
 				$remaining = (int) $expiration - time();
 			}
@@ -62,7 +64,7 @@ class RateLimiter {
 	}
 
 	public static function get_real_ip() {
-		$candidates = array();
+		$candidates  = array();
 		$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		if ( '' !== $remote_addr ) {
 			$candidates[] = $remote_addr;

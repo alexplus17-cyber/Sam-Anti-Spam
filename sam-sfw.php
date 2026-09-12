@@ -7,7 +7,7 @@
  * It intentionally avoids WordPress APIs and fatal errors when server settings are not compatible.
  */
 
-$ip = '';
+$ip          = '';
 $remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
 if ( is_string( $remote_addr ) && '' !== trim( $remote_addr ) && filter_var( trim( $remote_addr ), FILTER_VALIDATE_IP ) ) {
 	$ip = trim( $remote_addr );

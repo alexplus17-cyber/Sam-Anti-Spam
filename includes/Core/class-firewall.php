@@ -25,7 +25,7 @@ class Firewall {
 
 		// Real API call for Phase 4 logic
 		$api_url = 'https://api.samantispam.com/v1/sfw-list';
-		
+
 		$args = array(
 			'timeout' => 5,
 			'headers' => array(
@@ -34,7 +34,7 @@ class Firewall {
 		);
 
 		$response = wp_remote_get( $api_url, $args );
-		
+
 		// If the API call fails, do not wipe the cache file (graceful failure)
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
 			return;
@@ -42,8 +42,8 @@ class Firewall {
 
 		// Read plain text response (one IP per line)
 		$body = trim( wp_remote_retrieve_body( $response ) );
-		
-		$cache_file = ABSPATH . 'wp-content/sam-sfw-cache.txt';
+
+		$cache_file    = ABSPATH . 'wp-content/sam-sfw-cache.txt';
 		$cache_content = empty( $body ) ? '' : $body;
 
 		// Use WP Filesystem if available, fallback to basic file_put_contents with lock
@@ -57,15 +57,15 @@ class Firewall {
 
 	/**
 	 * WARNING: MODIFYING .HTACCESS CAN BREAK THE SITE.
-	 * 
+	 *
 	 * This method writes an auto_prepend_file directive to the root .htaccess file.
 	 * It uses WordPress's insert_with_markers to safely wrap the rule in custom comments.
-	 * 
+	 *
 	 * Always ensure you have a backup of .htaccess before modifying it manually.
 	 */
 	public function setup_firewall() {
-		require_once( ABSPATH . 'wp-admin/includes/misc.php' );
-		require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
 
 		$htaccess_file = get_home_path() . '.htaccess';
 		$sfw_source    = SAM_ANTI_SPAM_PLUGIN_DIR . 'sam-sfw.php';
@@ -100,7 +100,7 @@ class Firewall {
 		}
 
 		// Wrap in IfModule to prevent FastCGI 500 errors
-		$rule = "<IfModule mod_php.c>\n";
+		$rule  = "<IfModule mod_php.c>\n";
 		$rule .= "php_value auto_prepend_file '{$sfw_dest}'\n";
 		$rule .= "</IfModule>\n";
 		$rule .= "<IfModule mod_php5.c>\n";
@@ -108,7 +108,7 @@ class Firewall {
 		$rule .= "</IfModule>\n";
 		$rule .= "<IfModule mod_php7.c>\n";
 		$rule .= "php_value auto_prepend_file '{$sfw_dest}'\n";
-		$rule .= "</IfModule>";
+		$rule .= '</IfModule>';
 
 		$rules = explode( "\n", $rule );
 
@@ -135,15 +135,15 @@ class Firewall {
 	 * Removes the firewall rules from .htaccess.
 	 */
 	public function remove_firewall() {
-		require_once( ABSPATH . 'wp-admin/includes/misc.php' );
-		require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
 
 		$htaccess_file = get_home_path() . '.htaccess';
-		
+
 		if ( file_exists( $htaccess_file ) && is_writable( $htaccess_file ) ) {
 			insert_with_markers( $htaccess_file, 'Sam Anti Spam SFW', array() );
 		}
-		
+
 		// Optionally remove the file from root, though leaving it is harmless
 		// $sfw_dest = ABSPATH . 'sam-sfw.php';
 		// if ( file_exists( $sfw_dest ) ) { unlink( $sfw_dest ); }

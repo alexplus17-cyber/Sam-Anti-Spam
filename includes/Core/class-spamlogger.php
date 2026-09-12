@@ -6,11 +6,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class SpamLogger {
-	
+
 	public static function create_table() {
 		global $wpdb;
 
-		$table_name = $wpdb->prefix . 'sam_spam_log';
+		$table_name      = $wpdb->prefix . 'sam_spam_log';
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE $table_name (
@@ -23,7 +23,7 @@ class SpamLogger {
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 	}
 
@@ -50,14 +50,14 @@ class SpamLogger {
 
 		$orderby = isset( $args['orderby'] ) ? sanitize_text_field( $args['orderby'] ) : 'log_date';
 		$order   = isset( $args['order'] ) && strtolower( $args['order'] ) === 'asc' ? 'ASC' : 'DESC';
-		
+
 		// Allowed columns for sorting to prevent SQL injection
 		$allowed_orderby = array( 'id', 'ip', 'email', 'action_type', 'log_date' );
 		if ( ! in_array( $orderby, $allowed_orderby ) ) {
 			$orderby = 'log_date';
 		}
 
-		$limit = isset( $args['limit'] ) ? intval( $args['limit'] ) : 10;
+		$limit  = isset( $args['limit'] ) ? intval( $args['limit'] ) : 10;
 		$offset = isset( $args['offset'] ) ? intval( $args['offset'] ) : 0;
 
 		$sql = $wpdb->prepare(
@@ -77,7 +77,7 @@ class SpamLogger {
 
 	public function delete_logs( array $ids ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'sam_spam_log';
+		$table_name    = $wpdb->prefix . 'sam_spam_log';
 		$sanitized_ids = array_map( 'intval', array_filter( $ids, 'is_numeric' ) );
 
 		if ( empty( $sanitized_ids ) ) {
@@ -98,7 +98,7 @@ class SpamLogger {
 
 	public function get_logs_by_ids( array $ids ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'sam_spam_log';
+		$table_name    = $wpdb->prefix . 'sam_spam_log';
 		$sanitized_ids = array_map( 'intval', array_filter( $ids, 'is_numeric' ) );
 
 		if ( empty( $sanitized_ids ) ) {

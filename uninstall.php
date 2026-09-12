@@ -1,7 +1,7 @@
 <?php
 /**
  * Sam Anti Spam Uninstall Routine
- * 
+ *
  * Fired when the plugin is uninstalled via the WP Admin.
  */
 
@@ -31,8 +31,8 @@ if ( file_exists( $cache_file ) ) {
 }
 
 // 4. Remove SFW from .htaccess
-require_once( ABSPATH . 'wp-admin/includes/misc.php' );
-require_once( ABSPATH . 'wp-admin/includes/file.php' );
+require_once ABSPATH . 'wp-admin/includes/misc.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
 $htaccess_file = get_home_path() . '.htaccess';
 if ( file_exists( $htaccess_file ) && is_writable( $htaccess_file ) ) {
 	insert_with_markers( $htaccess_file, 'Sam Anti Spam SFW', array() );

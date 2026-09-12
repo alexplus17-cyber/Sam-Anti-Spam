@@ -22,7 +22,7 @@ class Hooks {
 		// Third-party Plugin Hooks
 		// Contact Form 7
 		add_filter( 'wpcf7_validate', array( $this, 'filter_cf7' ), 20, 2 );
-		
+
 		// WooCommerce
 		add_action( 'woocommerce_checkout_process', array( $this, 'filter_woo_checkout' ) );
 
@@ -36,12 +36,12 @@ class Hooks {
 	public function filter_comments( $approved, $commentdata ) {
 		$content = isset( $commentdata['comment_content'] ) ? $commentdata['comment_content'] : '';
 		$email   = isset( $commentdata['comment_author_email'] ) ? $commentdata['comment_author_email'] : '';
-		
+
 		$is_spam = AjaxHandler::is_spam( 'Comment', $content, $email );
 		if ( $is_spam ) {
 			$this->report_to_cloud( $email, 'Local Heuristics Triggered (Comment)' );
 			// Mark as spam ('spam') or hold for moderation ('0')
-			return 'spam'; 
+			return 'spam';
 		}
 		return $approved;
 	}
@@ -57,11 +57,11 @@ class Hooks {
 	public function filter_cf7( $result, $tags ) {
 		// Attempt to extract email and content from CF7 submission
 		$submission = \WPCF7_Submission::get_instance();
-		$email = '';
-		$content = '';
+		$email      = '';
+		$content    = '';
 		if ( $submission ) {
-			$data = $submission->get_posted_data();
-			$email = isset( $data['your-email'] ) ? $data['your-email'] : '';
+			$data    = $submission->get_posted_data();
+			$email   = isset( $data['your-email'] ) ? $data['your-email'] : '';
 			$content = isset( $data['your-message'] ) ? $data['your-message'] : '';
 		}
 
@@ -148,11 +148,13 @@ class Hooks {
 
 	private function report_to_cloud( $email, $reason ) {
 		$api_client = new ApiClient();
-		$ip = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
-		$api_client->report_spam( array(
-			'ip'     => $ip,
-			'email'  => $email,
-			'reason' => $reason
-		) );
+		$ip         = \SamAntiSpam\TrafficControl\RateLimiter::get_real_ip();
+		$api_client->report_spam(
+			array(
+				'ip'     => $ip,
+				'email'  => $email,
+				'reason' => $reason,
+			)
+		);
 	}
 }

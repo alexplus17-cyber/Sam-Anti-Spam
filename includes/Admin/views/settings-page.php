@@ -47,15 +47,20 @@ $sam_active_protections = 0;
 $sam_protection_keys    = array( 'enable_comments', 'enable_registrations', 'enable_cf7', 'enable_woo', 'enable_support_tickets' );
 foreach ( $sam_protection_keys as $sam_opt ) {
 	if ( ! empty( $sam_options[ $sam_opt ] ) ) {
-		$sam_active_protections++;
+		++$sam_active_protections;
 	}
 }
 
 $sam_tab_url = function ( $tab ) {
-	return esc_url( add_query_arg(
-		array( 'page' => 'sam-anti-spam', 'tab' => $tab ),
-		admin_url( 'options-general.php' )
-	) );
+	return esc_url(
+		add_query_arg(
+			array(
+				'page' => 'sam-anti-spam',
+				'tab'  => $tab,
+			),
+			admin_url( 'options-general.php' )
+		)
+	);
 };
 
 $sam_tab_meta = array(

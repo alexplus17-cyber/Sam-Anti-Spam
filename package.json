@@ -1,0 +1,16 @@
+{
+	"name": "sam-anti-spam",
+	"version": "1.1.0",
+	"private": true,
+	"type": "module",
+	"description": "E2E smoke tests for the Sam Anti Spam WordPress plugin.",
+	"scripts": {
+		"e2e": "playwright test",
+		"e2e:headed": "playwright test --headed",
+		"e2e:report": "playwright show-report"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.49.0",
+		"@wordpress/e2e-test-utils-playwright": "^1.16.0"
+	}
+}

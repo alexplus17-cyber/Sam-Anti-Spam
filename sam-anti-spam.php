@@ -51,19 +51,19 @@ class Plugin {
 
 		// Hook into init
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
-		
+
 		// Enqueue Admin Scripts/Styles
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 	}
 
 	/**
 	 * Autoloader for plugin classes.
-	 * 
+	 *
 	 * @param string $class The fully-qualified class name.
 	 */
 	public function autoload( $class ) {
 		// Project-specific namespace prefix
-		$prefix = 'SamAntiSpam\\';
+		$prefix   = 'SamAntiSpam\\';
 		$base_dir = __DIR__ . '/includes/';
 
 		// Does the class use the namespace prefix?
@@ -72,17 +72,32 @@ class Plugin {
 			return;
 		}
 
-		// Get the relative class name
+		// Get the relative class name.
 		$relative_class = substr( $class, $len );
 
-		// Replace the namespace prefix with the base directory, replace namespace
-		// separators with directory separators in the relative class name, append
-		// with .php
-		$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+		// WordPress Coding Standards require lowercase "class-{name}.php" filenames.
+		// Split the namespace (directory) portion from the class basename, then
+		// map <Dir>/<ClassName> -> <Dir>/class-<classname>.php.
+		$pos = strrpos( $relative_class, '\\' );
+		if ( false !== $pos ) {
+			$dir  = substr( $relative_class, 0, $pos );
+			$name = substr( $relative_class, $pos + 1 );
+		} else {
+			$dir  = '';
+			$name = $relative_class;
+		}
 
-		// If the file exists, require it
-		if ( file_exists( $file ) ) {
-			require $file;
+		$relative_dir = str_replace( '\\', '/', $dir );
+		$files        = array(
+			$base_dir . $relative_dir . '/class-' . strtolower( $name ) . '.php',
+			$base_dir . $relative_dir . '/' . $name . '.php',
+		);
+
+		foreach ( $files as $file ) {
+			if ( file_exists( $file ) ) {
+				require_once $file;
+				return;
+			}
 		}
 	}
 
@@ -102,12 +117,16 @@ class Plugin {
 		if ( strpos( $hook, 'sam-anti-spam' ) !== false ) {
 			wp_enqueue_style( 'sam-anti-spam-admin', SAM_ANTI_SPAM_PLUGIN_URL . 'assets/css/sam-admin.css', array(), SAM_ANTI_SPAM_VERSION );
 			wp_enqueue_script( 'sam-anti-spam-admin-js', SAM_ANTI_SPAM_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), SAM_ANTI_SPAM_VERSION, true );
-			wp_localize_script( 'sam-anti-spam-admin-js', 'samAdmin', array(
-				'nonce'       => wp_create_nonce( 'sam_admin_settings' ),
-				'ajaxurl'     => admin_url( 'admin-ajax.php' ),
-				'siteUrl'     => get_site_url(),
-				'adminEmail'  => get_option( 'admin_email' ),
-			) );
+			wp_localize_script(
+				'sam-anti-spam-admin-js',
+				'samAdmin',
+				array(
+					'nonce'      => wp_create_nonce( 'sam_admin_settings' ),
+					'ajaxurl'    => admin_url( 'admin-ajax.php' ),
+					'siteUrl'    => get_site_url(),
+					'adminEmail' => get_option( 'admin_email' ),
+				)
+			);
 		}
 	}
 
@@ -150,7 +169,7 @@ class Plugin {
 	 */
 	public static function activate() {
 		// Ensure the class is loaded since it's an activation hook
-		require_once plugin_dir_path( __FILE__ ) . 'includes/Core/SpamLogger.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/Core/class-spamlogger.php';
 		\SamAntiSpam\Core\SpamLogger::create_table();
 
 		// Schedule cron job for SFW cache updates
@@ -169,13 +188,16 @@ class Plugin {
 }
 
 // Add custom 10 minute schedule interval
-add_filter( 'cron_schedules', function( $schedules ) {
-	$schedules['ten_minutes'] = array(
-		'interval' => 600,
-		'display'  => esc_html__( 'Every 10 Minutes' ),
-	);
-	return $schedules;
-} );
+add_filter(
+	'cron_schedules',
+	function ( $schedules ) {
+		$schedules['ten_minutes'] = array(
+			'interval' => 600,
+			'display'  => esc_html__( 'Every 10 Minutes' ),
+		);
+		return $schedules;
+	}
+);
 
 // Register activation and deactivation hooks.
 register_activation_hook( __FILE__, array( '\\SamAntiSpam\\Plugin', 'activate' ) );

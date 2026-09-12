@@ -6,13 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class BotManager {
-	
+
 	// Internal array of known good search engine user-agent signatures
 	private $allowed_bots = array(
 		'Googlebot',
 		'Bingbot',
 		'Slurp',
-		'DuckDuckBot'
+		'DuckDuckBot',
 	);
 
 	public function init() {

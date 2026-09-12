@@ -1,0 +1,37 @@
+name: PHP Lint and WordPress Coding Standards
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install PHPCS + WordPress Coding Standards (dev only)
+        run: |
+          composer validate
+          composer install --no-interaction --no-progress --prefer-dist
+
+      - name: PHP syntax check (lint)
+        run: |
+          find . -path './backend/vendor' -prune -o -path './release-build' -prune -o -name '*.php' -print0 \
+            | while IFS= read -r -d '' file; do php -l "$file"; done
+
+      - name: WordPress coding standard check
+        run: |
+          ./vendor/bin/phpcs --standard=WordPress --extensions=php \
+            --ignore='backend/**,release-build/**,uninstall.php' .

@@ -12,7 +12,7 @@ class Settings {
 		add_action( 'admin_init', array( $this, 'handle_log_bulk_actions' ) );
 		add_action( 'admin_post_sam_restore_htaccess', array( $this, 'handle_restore_htaccess' ) );
 		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
-		
+
 		// AJAX handlers for registration
 		add_action( 'wp_ajax_sam_register_cloud', array( $this, 'ajax_register_cloud' ) );
 		add_action( 'wp_ajax_sam_disconnect_cloud', array( $this, 'ajax_disconnect_cloud' ) );
@@ -33,11 +33,14 @@ class Settings {
 	public function load_settings_page() {
 		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'general';
 		if ( 'log' === $tab ) {
-			add_screen_option( 'per_page', array(
-				'label'   => 'Logs per page',
-				'default' => 20,
-				'option'  => 'sam_spam_logs_per_page',
-			) );
+			add_screen_option(
+				'per_page',
+				array(
+					'label'   => 'Logs per page',
+					'default' => 20,
+					'option'  => 'sam_spam_logs_per_page',
+				)
+			);
 		}
 	}
 
@@ -50,9 +53,13 @@ class Settings {
 
 	public function register_settings() {
 		// Register with sanitize callback to merge options
-		register_setting( 'sam_antispam_settings', 'sam_antispam_settings', array(
-			'sanitize_callback' => array( $this, 'sanitize_settings' )
-		) );
+		register_setting(
+			'sam_antispam_settings',
+			'sam_antispam_settings',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_settings' ),
+			)
+		);
 
 		// General Tab (API connection UI handled custom, SFW handled standard)
 		add_settings_section( 'sam_antispam_general', 'General', null, 'sam-anti-spam-general' );
@@ -144,16 +151,24 @@ class Settings {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 		}
 
-		$site_url = isset( $_POST['site_url'] ) ? sanitize_text_field( wp_unslash( $_POST['site_url'] ) ) : '';
+		$site_url    = isset( $_POST['site_url'] ) ? sanitize_text_field( wp_unslash( $_POST['site_url'] ) ) : '';
 		$admin_email = isset( $_POST['admin_email'] ) ? sanitize_email( wp_unslash( $_POST['admin_email'] ) ) : '';
 
 		$register_url = rtrim( self::get_cloud_base_url(), '/' ) . '/v1/register';
 
-		$response = wp_remote_post( $register_url, array(
-			'body'    => wp_json_encode( array( 'site_url' => $site_url, 'admin_email' => $admin_email ) ),
-			'headers' => array( 'Content-Type' => 'application/json' ),
-			'timeout' => 10,
-		) );
+		$response = wp_remote_post(
+			$register_url,
+			array(
+				'body'    => wp_json_encode(
+					array(
+						'site_url'    => $site_url,
+						'admin_email' => $admin_email,
+					)
+				),
+				'headers' => array( 'Content-Type' => 'application/json' ),
+				'timeout' => 10,
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			wp_send_json_error( array( 'message' => 'Connection to cloud failed: ' . $response->get_error_message() ) );
@@ -163,14 +178,16 @@ class Settings {
 		$data = json_decode( $body, true );
 
 		if ( isset( $data['success'] ) && $data['success'] === true && ! empty( $data['api_key'] ) ) {
-			$options = get_option( 'sam_antispam_settings', array() );
+			$options            = get_option( 'sam_antispam_settings', array() );
 			$options['api_key'] = sanitize_text_field( $data['api_key'] );
 			update_option( 'sam_antispam_settings', $options );
-			
-			wp_send_json_success( array( 
-				'message' => 'Successfully connected to cloud.',
-				'api_key' => sanitize_text_field( $data['api_key'] )
-			) );
+
+			wp_send_json_success(
+				array(
+					'message' => 'Successfully connected to cloud.',
+					'api_key' => sanitize_text_field( $data['api_key'] ),
+				)
+			);
 		} else {
 			$err = isset( $data['error'] ) ? sanitize_text_field( $data['error'] ) : 'Unknown error from API.';
 			wp_send_json_error( array( 'message' => 'Registration failed: ' . $err ) );
@@ -215,7 +232,7 @@ class Settings {
 	public function sanitize_settings( $input ) {
 		// Merge new inputs with existing settings to prevent data loss across tabs
 		$existing = get_option( 'sam_antispam_settings', array() );
-		
+
 		if ( ! is_array( $existing ) ) {
 			$existing = array();
 		}
@@ -233,7 +250,7 @@ class Settings {
 
 		// Handle unchecking of checkboxes (they aren't sent in POST if unchecked)
 		$tab = isset( $_POST['sam_active_tab'] ) ? sanitize_text_field( $_POST['sam_active_tab'] ) : 'general';
-		
+
 		if ( $tab === 'general' ) {
 			if ( ! isset( $input['enable_sfw'] ) ) {
 				unset( $existing['enable_sfw'] );
@@ -259,7 +276,7 @@ class Settings {
 
 	public function render_text_field( $args ) {
 		$options = get_option( 'sam_antispam_settings' );
-		$value = isset( $options[ $args['label_for'] ] ) ? esc_attr( $options[ $args['label_for'] ] ) : '';
+		$value   = isset( $options[ $args['label_for'] ] ) ? esc_attr( $options[ $args['label_for'] ] ) : '';
 		echo '<input type="text" id="' . esc_attr( $args['label_for'] ) . '" name="sam_antispam_settings[' . esc_attr( $args['label_for'] ) . ']" value="' . $value . '" class="regular-text" />';
 	}
 
@@ -278,7 +295,7 @@ class Settings {
 
 	public function render_textarea_field( $args ) {
 		$options = get_option( 'sam_antispam_settings' );
-		$value = isset( $options[ $args['label_for'] ] ) ? esc_textarea( $options[ $args['label_for'] ] ) : '';
+		$value   = isset( $options[ $args['label_for'] ] ) ? esc_textarea( $options[ $args['label_for'] ] ) : '';
 		echo '<textarea id="' . esc_attr( $args['label_for'] ) . '" name="sam_antispam_settings[' . esc_attr( $args['label_for'] ) . ']" rows="5" cols="50">' . $value . '</textarea>';
 	}
 
@@ -357,7 +374,7 @@ class Settings {
 			foreach ( $logs as $row ) {
 				if ( ! empty( $row['ip'] ) && ! in_array( $row['ip'], $ips, true ) ) {
 					$ips[] = $row['ip'];
-					$added++;
+					++$added;
 				}
 			}
 			if ( $added > 0 ) {
@@ -376,7 +393,7 @@ class Settings {
 			foreach ( $logs as $row ) {
 				if ( ! empty( $row['email'] ) && ! in_array( $row['email'], $emails, true ) ) {
 					$emails[] = $row['email'];
-					$added++;
+					++$added;
 				}
 			}
 			if ( $added > 0 ) {

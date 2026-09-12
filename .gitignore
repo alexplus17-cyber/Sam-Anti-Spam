@@ -1,0 +1,12 @@
+# Node / Playwright
+node_modules/
+artifacts/
+test-results/
+playwright-report/
+
+# Local PHP dependencies and generated reports
+vendor/
+backend/vendor/
+release-build/
+phpcs-report.txt
+sam-anti-spam-release.zip

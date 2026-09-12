@@ -5,7 +5,7 @@
 - **Security:** 7/10 | **Performance:** 7/10 | **Architecture:** 6/10 | **UX:** 7/10 | **Compatibility:** 6/10
 - **PHP Version:** 7.4+ (with compatibility guardrails)
 - **Last Audit Date:** 2026-09-11
-- **Debug Log Status:** ❌ Review required; backend packaging and runtime safety are still being finalized
+- **Debug Log Status:** ❌ Review required; the BotManager autoload fatal was fixed, but the full site log still needs review
 
 ## 2. REFACTORING PROGRESS
 *(Mark with [x] when completely refactored and verified)*
@@ -40,7 +40,7 @@
 - [ ] Site-specific settings not yet validated on a clean install
 
 ## 4. CURRENT ACTIVE TASK
-**Instruction:** Harden the plugin for WordPress.org release by removing the development-only backend from the release package, fixing the remaining IP/API edge cases, and validating the result with fresh syntax checks.
+**Instruction:** Harden the plugin for WordPress.org release by removing the development-only backend from the release package, fixing the remaining IP/API edge cases, and validating the result with fresh syntax checks. The BotManager autoload fatal is resolved.
 
 **Assigned To:** Copilot / Reviewer
 
@@ -54,6 +54,8 @@
 ## 6. DEBUG LOG HISTORY
 - **2026-09-11:** Confirmed the bundled `backend/` directory is development-only and not required for the WordPress plugin runtime.
 - **2026-09-11:** Identified uninitialized `$ip` and API response edge cases in the release-critical PHP handlers.
+- **2026-09-12:** Fixed the `SamAntiSpam\\Core\\BotManager` fatal by making the plugin autoloader support both WordPress-style `class-*.php` files and PSR-style class filenames.
 
 ## 7. CHANGE LOG
 - **2026-09-11:** Initial WordPress.org release audit created; backend packaging and runtime hardening tasks recorded.
+- **2026-09-12:** Updated the runtime autoloader to resolve `BotManager` from the active plugin source and release-style layouts.
