@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v3
         with:
           php-version: '8.2'
           tools: composer
@@ -32,7 +32,8 @@ jobs:
             | while IFS= read -r -d '' file; do php -l "$file"; done
 
       - name: WordPress coding standard check
-        continue-on-error: true
         run: |
-          ./vendor/bin/phpcs --standard=WordPress --extensions=php \
-            --ignore='backend/**,release-build/**,vendor/**,uninstall.php' .
+          if ! ./vendor/bin/phpcs --standard=WordPress --extensions=php \
+            --ignore='backend/**,release-build/**,vendor/**,uninstall.php' .; then
+            echo "::warning::PHPCS found existing coding-standard violations; this report is advisory."
+          fi
